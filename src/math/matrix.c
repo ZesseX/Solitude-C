@@ -96,8 +96,6 @@ mat4_t mat4_model(transform_t* t){
 
     mat4_t model = mat4_mul(mat4_mul(tm, rm), sm);
 
-    mat4_print(model);
-
     return model;
 }
 
