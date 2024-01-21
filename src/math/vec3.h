@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <math.h>
+#include "math_utils.h"
 
 typedef struct {
     float x;

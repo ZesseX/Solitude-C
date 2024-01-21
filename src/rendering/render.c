@@ -130,7 +130,7 @@ void render_init_block() {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
-    camera.transform.position = (vec3_t){0.0f, 2.0f, -10.0f};
+    camera.transform.position = (vec3_t){0.0f, 0.0f, -10.0f};
 }
 
 int first = 1;
@@ -170,7 +170,7 @@ void render_update_end() {
 
 void render_chunk(chunk_t* chunk) {
     transform_t block_transform = {
-        .position = {0.0f, 0.0f, 0.0f},
+        .position = {0.0f, -2.0f, 0.0f},
         .rotation = {0.0f, 0.0f, 0.0f},
         .scale = {1.0f, 1.0f, 1.0f}
     };
