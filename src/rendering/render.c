@@ -6,6 +6,8 @@ transform_t cam_trans;
 camera_t camera;
 render_block_t default_render_block;
 
+float last_frame_time = 0;
+
 int renderer_init(){
     if (!glfwInit()) {
         printf("Failed to initialize glfw\n");
@@ -25,7 +27,7 @@ int renderer_init(){
     }
 
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(0);
+    glfwSwapInterval(1);
 
     if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         printf("Failed to initialize glad\n");
@@ -35,8 +37,10 @@ int renderer_init(){
 
     glEnable(GL_DEPTH_TEST);
 
-    render_init_block();
+    last_frame_time = glfwGetTime();
 
+    render_init_block();
+    
     return 1;
 }
 
@@ -125,15 +129,35 @@ void render_init_block() {
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->data);
     glGenerateMipmap(GL_TEXTURE_2D);
+
+    camera.transform.position = (vec3_t){0.0f, 2.0f, -10.0f};
 }
 
 int first = 1;
-
 void render_update_start() {
+    float cur_frame_time = glfwGetTime();
+    float deltatime = cur_frame_time - last_frame_time;
+    last_frame_time = cur_frame_time;
+
     float aspect_ratio = (float)WINDOW_WIDTH / (float)WINDOW_WIDTH;
     cam_trans.position = (vec3_t){0.0f, 2.0f, -10.0f};
-    camera_update_view_matrix(&camera, &cam_trans);
-    camera_update_proj_matrix(&camera, aspect_ratio);
+    //camera.transform.position = (vec3_t){0.0f, 2.0f, -10.0f};
+
+    if (first) {
+        vec3_print(camera.transform.position);
+    }
+
+    vec2_t move_inputs = input_get_movement(window);
+    vec2_t rotation_inputs = input_get_rotation(window);
+
+    camera_update_transform_freecam(&camera, deltatime, move_inputs, rotation_inputs);
+
+    if (first) {
+        vec3_print(camera.transform.position);
+    }
+
+    //camera_update_view_matrix(&camera, &cam_trans);
+    //camera_update_proj_matrix(&camera, aspect_ratio);
 
     glClearColor(0.2, 0.6f, 0.2f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -142,7 +166,7 @@ void render_update_start() {
 void render_update_end() {
     glfwSwapBuffers(window);
     glfwPollEvents();
-}
+} 
 
 void render_chunk(chunk_t* chunk) {
     transform_t block_transform = {
@@ -160,7 +184,7 @@ void render_chunk(chunk_t* chunk) {
     for (int x = 0; x < 16; x++){
         for (int z = 0; z < 16; z++) {
             block_transform.position.x = x;
-            block_transform.position.y = get_noise((vec2_t){x, z});
+            //block_transform.position.y = 0;
             block_transform.position.z = z;
 
             glBindTexture(GL_TEXTURE_2D, default_render_block.texture_id);
@@ -170,6 +194,8 @@ void render_chunk(chunk_t* chunk) {
     }
 
     if(first){
+        mat4_print(mat4_model(&block_transform));
+
         GLenum error = glGetError();
         if (error != GL_NO_ERROR) {
             printf("OpenGL Error: 0x%x\n", error);

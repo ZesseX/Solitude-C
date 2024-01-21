@@ -21,10 +21,10 @@ mat4_t mat4_rotate_y(float angle);
 mat4_t mat4_rotate_z(float angle);
 
 mat4_t mat4_model(transform_t* t);
-
 mat4_t mat4_perspective(float fov, float aspect_ratio, float near, float far);
-
 mat4_t mat4_look_at(vec3_t eye, vec3_t target, vec3_t up);
+
+mat4_t mat4_inverse(mat4_t* m);
 
 void mat4_print(mat4_t m);
 

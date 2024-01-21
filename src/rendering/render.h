@@ -17,10 +17,9 @@
 #include "camera.h"
 #include "../tga.h"
 #include "shader.h"
+#include "../input/input.h"
 
 #include "../chunk.h"
-
-#include "../noise.h"
 
 typedef struct {
     GLuint vbo;

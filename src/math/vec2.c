@@ -13,3 +13,7 @@ float vec2_magnitude(vec2_t* v) {
     v->x /= d;
     v->y /= d;
 }
+
+void vec2_print(vec2_t v) {
+    printf("\t[%.2f, %.2f]\n", v.x, v.y);
+}

@@ -13,6 +13,11 @@ float vec3_magnitude(vec3_t* v) {
 }
 
 void vec3_normalize(vec3_t* v) {
+    if(v->x == 0 && v->y == 0 && v->z == 0) {
+        fprintf(stderr, "Unable to normalize a zero vector\n");
+        return;
+    }
+
     float d = sqrtf(v->x + v->y + v->z);
     v->x /= d;
     v->y /= d;
@@ -35,4 +40,8 @@ vec3_t vec3_cross(vec3_t a, vec3_t b) {
 
 float vec3_dot(vec3_t a, vec3_t b) {
     return (a.x * b.x) + (a.y * b.y) + (a.z * b.z);
+}
+
+void vec3_print(vec3_t v) {
+    printf("\t[%.2f, %.2f, %.2f]\n", v.x, v.y, v.z);
 }

@@ -13,4 +13,6 @@ vec2_t vec2_sub(vec2_t* a, vec2_t* b);
 
 float vec2_magnitude(vec2_t* v);
 
+void vec2_print(vec2_t v);
+
 #endif

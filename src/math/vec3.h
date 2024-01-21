@@ -1,6 +1,7 @@
 #ifndef VEC3_H
 #define VEC3_H
 
+#include <stdio.h>
 #include <math.h>
 
 typedef struct {
@@ -17,5 +18,7 @@ float vec3_magnitude(vec3_t* v);
 void vec3_normalize(vec3_t* v);
 vec3_t vec3_cross(vec3_t a, vec3_t b);
 float vec3_dot(vec3_t a, vec3_t b);
+
+void vec3_print(vec3_t v);
 
 #endif

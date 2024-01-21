@@ -101,7 +101,7 @@ mat4_t mat4_model(transform_t* t){
 
 mat4_t mat4_perspective(float fov, float aspect_ratio, float near, float far){
     // fov in radians, aspect ratio = width / height
-    mat4_t m;
+    mat4_t m = mat4_identity();
     float f = 1.0f / tan(fov * 0.5f);
 
     m.m[0][0] = f / aspect_ratio;
@@ -137,6 +137,52 @@ mat4_t mat4_look_at(vec3_t eye, vec3_t target, vec3_t up){
     };
 
     return m;
+}
+
+mat4_t mat4_inverse(mat4_t* m) {
+    // https://graphics.stanford.edu/courses/cs248-98-fall/Final/q4.html
+    mat4_t r = mat4_identity(); // rotation matrix
+    mat4_t t = mat4_identity(); // transform matrix
+
+    r.m[0][0] = m->m[0][0];
+    r.m[0][1] = m->m[1][0];
+    r.m[0][2] = m->m[2][0];
+
+    r.m[1][0] = m->m[0][1];
+    r.m[1][1] = m->m[1][1];
+    r.m[1][2] = m->m[2][1];
+    
+    r.m[2][0] = m->m[0][2];
+    r.m[2][1] = m->m[1][2];
+    r.m[2][2] = m->m[2][2];
+
+    t.m[3][0] = -m->m[3][0];
+    t.m[3][1] = -m->m[3][1];
+    t.m[3][2] = -m->m[3][2];
+
+    float ux = t.m[0][0];
+    float uy = t.m[0][1];
+    float uz = t.m[0][2];
+
+    float vx = t.m[1][0];
+    float vy = t.m[1][1];
+    float vz = t.m[1][2];
+
+    float wx = t.m[2][0];
+    float wy = t.m[2][1];
+    float wz = t.m[2][2];
+
+    vec3_t pos = (vec3_t){t.m[3][0], t.m[3][1], t.m[3][2]};
+    t.m[3][0] = (-ux * pos.x) - (uy * pos.y) - (uz * pos.z);
+    t.m[3][1] = (-vx * pos.x) - (vy * pos.y) - (vz * pos.z);
+    t.m[3][2] = (-wx * pos.x) - (wy * pos.y) - (wz * pos.z);
+    pos = (vec3_t){t.m[3][0], t.m[3][1], t.m[3][2]};
+
+    r.m[3][0] = -vec3_dot((vec3_t){r.m[0][0], r.m[0][1], r.m[0][2]}, pos);
+    r.m[3][1] = -vec3_dot((vec3_t){r.m[1][0], r.m[1][1], r.m[1][2]}, pos);
+    r.m[3][2] = -vec3_dot((vec3_t){r.m[2][0], r.m[2][1], r.m[2][2]}, pos);
+
+    return r;
 }
 
 void mat4_print(mat4_t m){
