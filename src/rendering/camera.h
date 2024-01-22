@@ -12,6 +12,7 @@
 
 #define CAMERA_ROTATE_SPEED 5
 #define CAMERA_MOVEMENT_SPEED 5
+#define CAMERA_FOV 70
 
 typedef struct {
     mat4_t view;

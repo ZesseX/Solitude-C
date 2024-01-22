@@ -48,11 +48,13 @@ int renderer_update() {
     return 1;
 }
 
+chunk_t temp_chunk;
 void render_init_block() {
     int scs;
     default_render_block.shader_id = shader_load("shader/vert.vert", "shader/frag.frag", &scs);
     printf("Program id: %u\n", default_render_block.shader_id);
 
+    /*
     float vertices[] = {
         -0.5, -0.5,  0.5,
          0.5, -0.5,  0.5,
@@ -64,7 +66,6 @@ void render_init_block() {
          0.5,  0.5, -0.5,
         -0.5,  0.5, -0.5
     };
-
     unsigned int indices[] = { 
         0, 1, 2,
         2, 3, 0,
@@ -84,6 +85,12 @@ void render_init_block() {
         3, 2, 6,
         6, 7, 3
     };
+    */
+
+    int vertex_count;
+    float* vertices = get_chunk_vertices(&vertex_count);
+
+    GLuint* indices = get_chunk_block_indices(&temp_chunk);
 
     GLuint vbo, vao, ebo;
     glGenVertexArrays(1, &vao);
@@ -93,10 +100,10 @@ void render_init_block() {
     glBindVertexArray(vao);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertex_count, vertices, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLint) * temp_chunk.index_count, indices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -133,7 +140,6 @@ void render_init_block() {
     camera.transform.position = (vec3_t){0.0f, 0.0f, -10.0f};
 }
 
-int first = 1;
 void render_update_start() {
     float cur_frame_time = glfwGetTime();
     float deltatime = cur_frame_time - last_frame_time;
@@ -141,25 +147,13 @@ void render_update_start() {
 
     float aspect_ratio = (float)WINDOW_WIDTH / (float)WINDOW_WIDTH;
     cam_trans.position = (vec3_t){0.0f, 2.0f, -10.0f};
-    //camera.transform.position = (vec3_t){0.0f, 2.0f, -10.0f};
-
-    if (first) {
-        vec3_print(camera.transform.position);
-    }
 
     vec2_t move_inputs = input_get_movement(window);
     vec2_t rotation_inputs = input_get_rotation(window);
 
     camera_update_transform_freecam(&camera, deltatime, move_inputs, rotation_inputs);
 
-    if (first) {
-        vec3_print(camera.transform.position);
-    }
-
-    //camera_update_view_matrix(&camera, &cam_trans);
-    //camera_update_proj_matrix(&camera, aspect_ratio);
-
-    glClearColor(0.2, 0.6f, 0.2f, 1.0f);
+    glClearColor(0.1, 0.3f, 0.6f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -181,25 +175,27 @@ void render_chunk(chunk_t* chunk) {
     glUniformMatrix4fv(default_render_block.matrix_view_loc, 1, GL_FALSE, (float*)&camera.view);
     glUniformMatrix4fv(default_render_block.matrix_projection_loc, 1, GL_FALSE, (float*)&camera.proj);
     
+    /*
     for (int x = 0; x < 16; x++){
         for (int z = 0; z < 16; z++) {
-            block_transform.position.x = x;
+            //block_transform.position.x = x;
             //block_transform.position.y = 0;
-            block_transform.position.z = z;
+            //block_transform.position.z = z;
 
             glBindTexture(GL_TEXTURE_2D, default_render_block.texture_id);
             glUniformMatrix4fv(default_render_block.matrix_model_loc, 1, GL_FALSE, (float*)mat4_model(&block_transform).m);
             glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
         }
     }
+    */
 
-    if(first){
-        mat4_print(mat4_model(&block_transform));
+    glBindTexture(GL_TEXTURE_2D, default_render_block.texture_id);
+    glUniformMatrix4fv(default_render_block.matrix_model_loc, 1, GL_FALSE, (float*)mat4_model(&block_transform).m);
+    
+    glDrawElements(GL_TRIANGLES, temp_chunk.index_count, GL_UNSIGNED_INT, 0);
 
-        GLenum error = glGetError();
-        if (error != GL_NO_ERROR) {
-            printf("OpenGL Error: 0x%x\n", error);
-        }
-        first = 0;
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+        printf("OpenGL Error: 0x%x\n", error);
     }
 }
