@@ -42,7 +42,7 @@ int renderer_update();
 void render_update_start();
 void render_update_end();
 
-void render_init_block();
+void render_init_temp_chunk();
 void render_chunk(chunk_t* chunk);
 
 #endif

@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <GLFW/glfw3.h>
+#include "math/vec3.h"
 
 #define CHUNK_SIZE 32
 #define CHUNK_TOTAL_BLOCK_COUNT (CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE)
@@ -17,5 +18,10 @@ void init_chunk(chunk_t* chunk);
 
 float* get_chunk_vertices(int* count);
 GLuint* get_chunk_block_indices(chunk_t* chunk);
+
+void get_block_visible_tris(chunk_t* chunk, vec3_t block, GLuint* GLuint, int* count);
+
+static int has_block(chunk_t* chunk, vec3_t pos);
+static void push_tris_into_array(int face, GLuint* array, int* index);
 
 #endif
