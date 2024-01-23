@@ -39,17 +39,21 @@ int renderer_init(){
 
     last_frame_time = glfwGetTime();
 
-    render_init_block();
+    render_init_temp_chunk();
     
     return 1;
 }
 
+chunk_t temp_chunk;
 int renderer_update() {
-    return 1;
+    render_update_start();
+    render_chunk(&temp_chunk);
+    render_update_end();
+
+    return glfwWindowShouldClose(window);
 }
 
-chunk_t temp_chunk;
-void render_init_block() {
+void render_init_temp_chunk() {
     int scs;
     default_render_block.shader_id = shader_load("shader/vert.vert", "shader/frag.frag", &scs);
     printf("Program id: %u\n", default_render_block.shader_id);
@@ -87,6 +91,8 @@ void render_init_block() {
     };
     */
 
+    init_chunk(&temp_chunk);
+    
     int vertex_count;
     float* vertices = get_chunk_vertices(&vertex_count);
 
@@ -146,12 +152,13 @@ void render_update_start() {
     last_frame_time = cur_frame_time;
 
     float aspect_ratio = (float)WINDOW_WIDTH / (float)WINDOW_WIDTH;
-    cam_trans.position = (vec3_t){0.0f, 2.0f, -10.0f};
 
     vec2_t move_inputs = input_get_movement(window);
     vec2_t rotation_inputs = input_get_rotation(window);
 
     camera_update_transform_freecam(&camera, deltatime, move_inputs, rotation_inputs);
+
+    //vec3_print(camera.transform.rotation);
 
     glClearColor(0.1, 0.3f, 0.6f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -164,7 +171,7 @@ void render_update_end() {
 
 void render_chunk(chunk_t* chunk) {
     transform_t block_transform = {
-        .position = {0.0f, -2.0f, 0.0f},
+        .position = {0.0f, 0.0f, 0.0f},
         .rotation = {0.0f, 0.0f, 0.0f},
         .scale = {1.0f, 1.0f, 1.0f}
     };
@@ -188,6 +195,8 @@ void render_chunk(chunk_t* chunk) {
         }
     }
     */
+
+    //printf("%d\n", temp_chunk.index_count);
 
     glBindTexture(GL_TEXTURE_2D, default_render_block.texture_id);
     glUniformMatrix4fv(default_render_block.matrix_model_loc, 1, GL_FALSE, (float*)mat4_model(&block_transform).m);
