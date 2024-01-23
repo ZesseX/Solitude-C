@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "../transform.h"
+#include "vec3.h"
 
 typedef struct {
     float m[4][4];
@@ -25,6 +26,8 @@ mat4_t mat4_perspective(float fov, float aspect_ratio, float near, float far);
 mat4_t mat4_look_at(vec3_t eye, vec3_t target, vec3_t up);
 
 mat4_t mat4_inverse(mat4_t* m);
+
+vec3_t mat4_mul_vec3(mat4_t* m, vec3_t v);
 
 void mat4_print(mat4_t m);
 

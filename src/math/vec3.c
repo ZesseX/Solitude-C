@@ -14,11 +14,11 @@ float vec3_magnitude(vec3_t* v) {
 
 void vec3_normalize(vec3_t* v) {
     if(v->x == 0 && v->y == 0 && v->z == 0) {
-        fprintf(stderr, "Unable to normalize a zero vector\n");
+        //fprintf(stderr, "Unable to normalize a zero vector\n");
         return;
     }
 
-    float d = sqrtf(v->x + v->y + v->z);
+    float d = sqrtf(v->x * v->x + v->y * v->y + v->z * v->z);
     v->x /= d;
     v->y /= d;
     v->z /= d;

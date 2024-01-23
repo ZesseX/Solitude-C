@@ -178,11 +178,26 @@ mat4_t mat4_inverse(mat4_t* m) {
     t.m[3][2] = (-wx * pos.x) - (wy * pos.y) - (wz * pos.z);
     pos = (vec3_t){t.m[3][0], t.m[3][1], t.m[3][2]};
 
+    /*
     r.m[3][0] = -vec3_dot((vec3_t){r.m[0][0], r.m[0][1], r.m[0][2]}, pos);
     r.m[3][1] = -vec3_dot((vec3_t){r.m[1][0], r.m[1][1], r.m[1][2]}, pos);
     r.m[3][2] = -vec3_dot((vec3_t){r.m[2][0], r.m[2][1], r.m[2][2]}, pos);
+    */
 
-    return r;
+    r.m[3][0] = 0.0f;
+    r.m[3][1] = 0.0f;
+    r.m[3][2] = 0.0f;
+    r.m[3][3] = 1.0f;
+
+    return mat4_mul(t, r);
+}
+
+vec3_t mat4_mul_vec3(mat4_t* m, vec3_t v) {
+    vec3_t out;
+    out.x = m->m[0][0] * v.x + m->m[1][0] * v.y + m->m[2][0] * v.z + m->m[3][0];
+    out.y = m->m[0][1] * v.x + m->m[1][1] * v.y + m->m[2][1] * v.z + m->m[3][1];
+    out.z = m->m[0][2] * v.x + m->m[1][2] * v.y + m->m[2][2] * v.z + m->m[3][2];
+    return out;
 }
 
 void mat4_print(mat4_t m){
