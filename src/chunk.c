@@ -11,18 +11,18 @@ void init_chunk(chunk_t* chunk) {
             even = 0;
         }
         else {
-            chunk->blocks[i] = 0;
+            chunk->blocks[i] = 1;
             even = 1;
         }
     }
 }
 
-float* get_chunk_vertices(int* count) {
+GLfloat* get_chunk_vertices(int* count) {
     // block count * (values per vertex * vertex count) * sizeof(float)
-    float* verts = (float*)malloc(CHUNK_TOTAL_BLOCK_COUNT * (3 * 8) * sizeof(float));
+    GLfloat* verts = (GLfloat*)malloc(CHUNK_TOTAL_BLOCK_COUNT * (3 * 8) * sizeof(GLfloat));
 
     int verts_index = 0;
-    float x_offset, y_offset, z_offset;
+    GLfloat x_offset, y_offset, z_offset;
     for (int x = 0; x < CHUNK_SIZE; x++) {
         for (int y = 0; y < CHUNK_SIZE; y++) {
             for (int z = 0; z < CHUNK_SIZE; z++) {
@@ -41,7 +41,7 @@ float* get_chunk_vertices(int* count) {
                 1, 1, 0
                 0, 1, 0
                 */
-                float single_block_verts[] = {
+                GLfloat single_block_verts[] = {
                     x_offset, y_offset, z_offset + 1,
                     x_offset + 1, y_offset, z_offset + 1,
                     x_offset + 1, y_offset + 1, z_offset +1,
@@ -60,12 +60,14 @@ float* get_chunk_vertices(int* count) {
         }
     }
 
-    *count = verts_index + 1;
+    *count = verts_index;
     return verts;
 }
 
 GLuint* get_chunk_block_indices(chunk_t* chunk) {
     // TODO: Could probably save some memory with realloc, chunk will never have this many faces visible
+    // Only allocate x amount and if it's exceeded add y amount of extra memory there
+    // TODO: GLshort should be enough? at least with 32x32x32
     GLuint* indices = (GLuint*)malloc(CHUNK_TOTAL_BLOCK_COUNT * sizeof(GLuint) * 6 * 6);
     int index = 0;
 
@@ -138,8 +140,14 @@ GLuint* get_chunk_block_indices(chunk_t* chunk) {
 
     free(block_visible_tris);
 
+    GLuint* final_indices = (GLuint*)realloc(indices, index * sizeof(GLuint));
+    if (final_indices == NULL) {
+        fprintf(stderr, "Unable to reallocate memory for chunk indices\n");
+        return NULL;
+    }
+
     chunk->index_count = index + 1;
-    return indices;
+    return final_indices;
 }
 
 void get_block_visible_tris(chunk_t* chunk, vec3_t block, GLuint* tris, int* count) {

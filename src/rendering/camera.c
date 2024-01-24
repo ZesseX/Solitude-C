@@ -30,17 +30,6 @@ void camera_update_transform_freecam(camera_t* camera, float dt, vec2_t move_inp
         camera->transform.rotation.x = -PI_HALF;
     }
 
-    /*
-    vec3_t move_dir = {CAMERA_MOVEMENT_SPEED * dt * -move_inputs.x, 0, CAMERA_MOVEMENT_SPEED * dt * move_inputs.y};
-    //vec3_t add_vector = vec3_add(&camera->transform.position, &move_dir);
-    //camera->transform.position = add_vector;
-    //camera->transform.position.y = -10.0f;
-
-    mat4_t rotation = mat4_rotate(0, camera->transform.rotation.y, 0);
-    vec3_t temp = mat4_mul_vec3(&rotation, move_dir);
-    camera->transform.position = vec3_add(&camera->transform.position, &temp);
-    */
-
     vec3_t move_dir = {move_inputs.x, 0, -move_inputs.y};
     vec3_normalize(&move_dir);
 

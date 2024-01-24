@@ -94,7 +94,7 @@ void render_init_temp_chunk() {
     init_chunk(&temp_chunk);
     
     int vertex_count;
-    float* vertices = get_chunk_vertices(&vertex_count);
+    GLfloat* vertices = get_chunk_vertices(&vertex_count);
 
     GLuint* indices = get_chunk_block_indices(&temp_chunk);
 
@@ -106,12 +106,12 @@ void render_init_temp_chunk() {
     glBindVertexArray(vao);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertex_count, vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertex_count, vertices, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLint) * temp_chunk.index_count, indices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
     glEnableVertexAttribArray(0);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -127,21 +127,8 @@ void render_init_temp_chunk() {
     default_render_block.matrix_model_loc = glGetUniformLocation(default_render_block.shader_id, "model");
 
     default_render_block.texture_loc = glGetUniformLocation(default_render_block.shader_id, "texture_sampler");
-    glUniform1i(default_render_block.texture_loc, 0);
-
-    default_render_block.texture_id;
-    glGenTextures(1, &default_render_block.texture_id);
-    glBindTexture(GL_TEXTURE_2D, default_render_block.texture_id);
-    
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    tga_image_t* texture = load_tga("textures/32x32.tga");
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->data);
-    glGenerateMipmap(GL_TEXTURE_2D);
+    texture_t* texture = load_texture("textures/32x32.tga");
+    default_render_block.texture_id = texture->id;
 
     camera.transform.position = (vec3_t){0.0f, 0.0f, -10.0f};
 }
@@ -171,7 +158,7 @@ void render_update_end() {
 
 void render_chunk(chunk_t* chunk) {
     transform_t block_transform = {
-        .position = {0.0f, 0.0f, 0.0f},
+        .position = {0.0f, 1.0f, 0.0f},
         .rotation = {0.0f, 0.0f, 0.0f},
         .scale = {1.0f, 1.0f, 1.0f}
     };
@@ -181,22 +168,6 @@ void render_chunk(chunk_t* chunk) {
 
     glUniformMatrix4fv(default_render_block.matrix_view_loc, 1, GL_FALSE, (float*)&camera.view);
     glUniformMatrix4fv(default_render_block.matrix_projection_loc, 1, GL_FALSE, (float*)&camera.proj);
-    
-    /*
-    for (int x = 0; x < 16; x++){
-        for (int z = 0; z < 16; z++) {
-            //block_transform.position.x = x;
-            //block_transform.position.y = 0;
-            //block_transform.position.z = z;
-
-            glBindTexture(GL_TEXTURE_2D, default_render_block.texture_id);
-            glUniformMatrix4fv(default_render_block.matrix_model_loc, 1, GL_FALSE, (float*)mat4_model(&block_transform).m);
-            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-        }
-    }
-    */
-
-    //printf("%d\n", temp_chunk.index_count);
 
     glBindTexture(GL_TEXTURE_2D, default_render_block.texture_id);
     glUniformMatrix4fv(default_render_block.matrix_model_loc, 1, GL_FALSE, (float*)mat4_model(&block_transform).m);
