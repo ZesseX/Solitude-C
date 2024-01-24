@@ -2,7 +2,7 @@
 #define TEXTURE_H
 
 #include <stdlib.h>
-#include <glad.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "../tga.h"
 

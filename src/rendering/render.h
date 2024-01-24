@@ -9,13 +9,13 @@
 #include <stdint.h>
 #include <string.h>
 #include <malloc.h>
-#include <glad.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include "../math/matrix.h"
 #include "../transform.h"
 #include "camera.h"
-#include "../tga.h"
+#include "texture.h"
 #include "shader.h"
 #include "../input/input.h"
 

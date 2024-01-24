@@ -12,9 +12,10 @@ link_directories(${GLFW_LIB_DIR})
 file(GLOB_RECURSE SOURCE_FILES "*.c")
 file(GLOB_RECURSE HEADER_FILES "*.h")
 
-set(GLAD_INCLUDE_DIR "C:/libs/glad")
+set(GLAD_INCLUDE_DIR "C:/libs/glad/include")
+set(GLAD_SOURCE_DIR "C:/libs/glad/src")
 include_directories(${GLAD_INCLUDE_DIR})
-add_library(glad ${GLAD_INCLUDE_DIR}/glad.c)
+add_library(glad ${GLAD_SOURCE_DIR}/glad.c)
 
 add_executable(Solitude ${SOURCE_FILES} ${HEADER_FILES})
 

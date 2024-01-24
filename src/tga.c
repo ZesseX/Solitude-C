@@ -17,6 +17,8 @@ tga_image_t* load_tga(const char* name){
     img.height = *(int16_t*)&header[14];
     img.bit_depth = header[16];
 
+    printf("%u\n", img.bit_depth);
+
     size_t img_size = img.width * img.height * (img.bit_depth / 8);
     img.data = (uint8_t*)malloc(img_size);
     fread(img.data, 1, img_size, file);
