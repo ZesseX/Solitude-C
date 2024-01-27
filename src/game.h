@@ -6,7 +6,7 @@
 #include "rendering/render.h"
 #include "player.h"
 
-#include "chunk.h"
+#include "world/chunk.h"
 
 typedef struct {
     chunk_t* chunk;

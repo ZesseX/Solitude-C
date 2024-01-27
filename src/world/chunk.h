@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 #include <GLFW/glfw3.h>
-#include "math/vec3.h"
+#include "../math/vec3.h"
 
 #define CHUNK_SIZE 32
 #define CHUNK_TOTAL_BLOCK_COUNT (CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE)

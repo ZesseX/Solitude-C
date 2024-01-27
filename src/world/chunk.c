@@ -17,7 +17,11 @@ void init_chunk(chunk_t* chunk) {
     }
 }
 
+#include <time.h>
+
 GLfloat* get_chunk_vertices(int* count) {
+    clock_t begin = clock();
+
     // block count * (values per vertex * vertex count) * sizeof(float)
     GLfloat* verts = (GLfloat*)malloc(CHUNK_TOTAL_BLOCK_COUNT * (3 * 8) * sizeof(GLfloat));
 
@@ -59,6 +63,10 @@ GLfloat* get_chunk_vertices(int* count) {
             }
         }
     }
+
+    clock_t end = clock();
+    double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+    printf("Time: %f", time_spent);
 
     *count = verts_index;
     return verts;
