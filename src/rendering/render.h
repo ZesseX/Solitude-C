@@ -19,7 +19,7 @@
 #include "shader.h"
 #include "../input/input.h"
 
-#include "../chunk.h"
+#include "../world/chunk.h"
 
 typedef struct {
     GLuint vbo;
@@ -34,6 +34,8 @@ typedef struct {
     GLuint matrix_view_loc;
     GLuint matrix_projection_loc;
     GLuint matrix_model_loc;
+
+    GLuint test_matrix_loc;
 } render_block_t;
 
 int renderer_init();

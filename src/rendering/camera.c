@@ -9,7 +9,7 @@ void camera_update_view_matrix(camera_t* camera) {
 }
 
 void camera_update_proj_matrix(camera_t* camera, float aspect_ratio) {
-    camera->proj = mat4_perspective(CAMERA_FOV, aspect_ratio, 0.1f, 256.0f);
+    camera->proj = mat4_perspective(CAMERA_FOV, aspect_ratio, 0.1f, 1024.0f);
 }
 
 void camera_update_transform_freecam(camera_t* camera, float dt, vec2_t move_inputs, vec2_t rotate_inputs) {

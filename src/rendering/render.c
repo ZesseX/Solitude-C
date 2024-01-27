@@ -4,7 +4,10 @@ GLFWwindow* window = NULL;
 
 transform_t cam_trans;
 camera_t camera;
-render_block_t default_render_block;
+
+render_block_t* default_render_blocks;
+chunk_t* base_chunks;
+int render_block_count = 1024;
 
 float last_frame_time = 0;
 
@@ -27,7 +30,7 @@ int renderer_init(){
     }
 
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(1);
+    glfwSwapInterval(0);
 
     if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         printf("Failed to initialize glad\n");
@@ -44,10 +47,9 @@ int renderer_init(){
     return 1;
 }
 
-chunk_t temp_chunk;
 int renderer_update() {
     render_update_start();
-    render_chunk(&temp_chunk);
+    render_chunk(NULL);
     render_update_end();
 
     return glfwWindowShouldClose(window);
@@ -55,82 +57,62 @@ int renderer_update() {
 
 void render_init_temp_chunk() {
     int scs;
-    default_render_block.shader_id = shader_load("shader/vert.vert", "shader/frag.frag", &scs);
-    printf("Program id: %u\n", default_render_block.shader_id);
+    //default_render_block.shader_id = shader_load("shader/vert.vert", "shader/frag.frag", &scs);
+    //default_render_block2.shader_id = default_render_block.shader_id;
+    //printf("Program id: %u\n", default_render_block.shader_id);
 
-    /*
-    float vertices[] = {
-        -0.5, -0.5,  0.5,
-         0.5, -0.5,  0.5,
-         0.5,  0.5,  0.5,
-        -0.5,  0.5,  0.5,
+    GLuint shader_id = shader_load("shader/vert.vert", "shader/frag.frag", &scs);
 
-        -0.5, -0.5, -0.5,
-         0.5, -0.5, -0.5,
-         0.5,  0.5, -0.5,
-        -0.5,  0.5, -0.5
-    };
-    unsigned int indices[] = { 
-        0, 1, 2,
-        2, 3, 0,
-        
-        1, 5, 6,
-        6, 2, 1,
-        
-        7, 6, 5,
-        5, 4, 7,
-        
-        4, 0, 3,
-        3, 7, 4,
-        
-        4, 5, 1,
-        1, 0, 4,
-        
-        3, 2, 6,
-        6, 7, 3
-    };
-    */
+    default_render_blocks = (render_block_t*)malloc(sizeof(render_block_t) * render_block_count);
+    base_chunks = (chunk_t*)malloc(sizeof(chunk_t) * render_block_count);
+    for (int i = 0; i < render_block_count; i++) {
+        init_chunk(&base_chunks[i]);
+    }
 
-    init_chunk(&temp_chunk);
-    
     int vertex_count;
     GLfloat* vertices = get_chunk_vertices(&vertex_count);
-
-    GLuint* indices = get_chunk_block_indices(&temp_chunk);
-
-    GLuint vbo, vao, ebo;
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
-    glGenBuffers(1, &ebo);
-
-    glBindVertexArray(vao);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertex_count, vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLint) * temp_chunk.index_count, indices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-    default_render_block.vao = vao;
-    default_render_block.vbo = vbo;
-    default_render_block.ebo = ebo;
-
-    glUseProgram(default_render_block.shader_id);
-    default_render_block.matrix_view_loc = glGetUniformLocation(default_render_block.shader_id, "view");
-    default_render_block.matrix_projection_loc = glGetUniformLocation(default_render_block.shader_id, "projection");
-    default_render_block.matrix_model_loc = glGetUniformLocation(default_render_block.shader_id, "model");
-
-    default_render_block.texture_loc = glGetUniformLocation(default_render_block.shader_id, "texture_sampler");
+    
     texture_t* texture = load_texture("textures/32x32.tga");
-    default_render_block.texture_id = texture->id;
+    glGenerateMipmap(texture->id);
 
-    camera.transform.position = (vec3_t){0.0f, 0.0f, -10.0f};
+    GLuint vbo;
+    glUseProgram(shader_id);
+    for (int i = 0; i < render_block_count; i++){
+        default_render_blocks[i].shader_id = shader_id;
+
+        GLuint* indices = get_chunk_block_indices(&base_chunks[i]);
+
+        GLuint vao, ebo;
+        glGenVertexArrays(1, &vao);
+        if(i == 0) {
+            glGenBuffers(1, &vbo);
+        }
+        glGenBuffers(1, &ebo);
+
+        glBindVertexArray(vao);
+
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        if(i == 0) {
+            glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertex_count, vertices, GL_STATIC_DRAW);
+        }
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLint) * base_chunks[i].index_count, indices, GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+
+        default_render_blocks[i].vao = vao;
+        default_render_blocks[i].vbo = vbo;
+        default_render_blocks[i].ebo = ebo;
+
+        default_render_blocks[i].test_matrix_loc = glGetUniformLocation(shader_id, "test");
+        default_render_blocks[i].texture_loc = glGetUniformLocation(shader_id, "texture_sampler");
+        default_render_blocks[i].texture_id = texture->id;
+    }
 }
 
 void render_update_start() {
@@ -145,8 +127,6 @@ void render_update_start() {
 
     camera_update_transform_freecam(&camera, deltatime, move_inputs, rotation_inputs);
 
-    //vec3_print(camera.transform.rotation);
-
     glClearColor(0.1, 0.3f, 0.6f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
@@ -157,22 +137,37 @@ void render_update_end() {
 } 
 
 void render_chunk(chunk_t* chunk) {
-    transform_t block_transform = {
-        .position = {0.0f, 1.0f, 0.0f},
-        .rotation = {0.0f, 0.0f, 0.0f},
-        .scale = {1.0f, 1.0f, 1.0f}
-    };
+    glUseProgram(default_render_blocks[1].shader_id);
+    mat4_t camera_mat = mat4_mul(camera.view, camera.proj);
 
-    glUseProgram(default_render_block.shader_id);
-    glBindVertexArray(default_render_block.vao);
+    int x = 0;
+    int z = 0;
+    int start = -512;
+    for (int i = 0; i < render_block_count; i++) {
+        transform_t chunk_transform = {
+            .position = {start + x * 32, -128.0f, start + z * 32 + 1},
+            .rotation = {0.0f, 0.0f, 0.0f},
+            .scale = {1.0f, 1.0f, 1.0f}
+        };
 
-    glUniformMatrix4fv(default_render_block.matrix_view_loc, 1, GL_FALSE, (float*)&camera.view);
-    glUniformMatrix4fv(default_render_block.matrix_projection_loc, 1, GL_FALSE, (float*)&camera.proj);
+        x++;
+        if (x >= 32) {
+            x = 0;
+            z++;
+        }
 
-    glBindTexture(GL_TEXTURE_2D, default_render_block.texture_id);
-    glUniformMatrix4fv(default_render_block.matrix_model_loc, 1, GL_FALSE, (float*)mat4_model(&block_transform).m);
-    
-    glDrawElements(GL_TRIANGLES, temp_chunk.index_count, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(default_render_blocks[i].vao);
+
+        glBindTexture(GL_TEXTURE_2D, default_render_blocks[i].texture_id);
+
+        mat4_t test = mat4_mul(mat4_model(&chunk_transform), camera_mat);
+        glUniformMatrix4fv(default_render_blocks[i].test_matrix_loc, 1, GL_FALSE, (float*)test.m);
+        GLenum error = glGetError();
+
+        glDrawElements(GL_TRIANGLES, base_chunks[i].index_count, GL_UNSIGNED_INT, 0);
+    }
+
+    glUseProgram(0);
 
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
