@@ -6,8 +6,8 @@ transform_t cam_trans;
 camera_t camera;
 
 render_block_t* default_render_blocks;
-chunk_t* base_chunks;
-int render_block_count = 1024;
+chunk_t base_chunk;
+int render_block_count = 128;
 
 float last_frame_time = 0;
 
@@ -39,6 +39,8 @@ int renderer_init(){
     }
 
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(GLDebugMessageCallback, NULL);
 
     last_frame_time = glfwGetTime();
 
@@ -55,20 +57,47 @@ int renderer_update() {
     return glfwWindowShouldClose(window);
 }
 
+render_chunk_t* rcs;
+typedef struct {
+    GLuint shader_id;
+    GLuint texture_id;
+
+    GLuint mvp_matrix_loc;
+    GLuint texture_loc;
+} render_chunk_defaults_t;
+
+render_chunk_defaults_t rc_defaults;
+
 void render_init_temp_chunk() {
     int scs;
     //default_render_block.shader_id = shader_load("shader/vert.vert", "shader/frag.frag", &scs);
     //default_render_block2.shader_id = default_render_block.shader_id;
     //printf("Program id: %u\n", default_render_block.shader_id);
 
-    GLuint shader_id = shader_load("shader/vert.vert", "shader/frag.frag", &scs);
+    rc_defaults.shader_id = shader_load("shader/vert.vert", "shader/frag.frag", &scs);
 
-    default_render_blocks = (render_block_t*)malloc(sizeof(render_block_t) * render_block_count);
-    base_chunks = (chunk_t*)malloc(sizeof(chunk_t) * render_block_count);
+    //default_render_blocks = (render_block_t*)malloc(sizeof(render_block_t) * render_block_count);
+    //base_chunks = (chunk_t*)malloc(sizeof(chunk_t) * 1);
     for (int i = 0; i < render_block_count; i++) {
-        init_chunk(&base_chunks[i]);
+        //init_chunk(&base_chunks[i]);
     }
+    init_chunk(&base_chunk);
+    base_chunk.index_count = CHUNK_TOTAL_BLOCK_COUNT * (6 * 6);
 
+    glUseProgram(rc_defaults.shader_id);
+
+    rcs = (render_chunk_t*)malloc(sizeof(render_chunk_t*) * render_block_count);
+    texture_t* texture = load_texture("textures/32x32.tga");
+    glGenerateMipmap(texture->id);
+
+    for (int i = 0; i < render_block_count; i++) {
+        update_render_chunk(&base_chunk, &rcs[i]);
+    }
+    rc_defaults.texture_id = texture->id;
+    rc_defaults.mvp_matrix_loc = glGetUniformLocation(rc_defaults.shader_id, "mvp");;
+    rc_defaults.texture_loc = glGetUniformLocation(rc_defaults.shader_id, "texture_sampler");
+
+    /*
     int vertex_count;
     GLfloat* vertices = get_chunk_vertices(&vertex_count);
     
@@ -113,6 +142,7 @@ void render_init_temp_chunk() {
         default_render_blocks[i].texture_loc = glGetUniformLocation(shader_id, "texture_sampler");
         default_render_blocks[i].texture_id = texture->id;
     }
+    */
 }
 
 void render_update_start() {
@@ -137,6 +167,42 @@ void render_update_end() {
 } 
 
 void render_chunk(chunk_t* chunk) {
+    glUseProgram(rc_defaults.shader_id);
+    mat4_t camera_mat = mat4_mul(camera.view, camera.proj);
+
+    int x = 0;
+    int z = 0;
+    int start = -64;
+    for (int i = 0; i < render_block_count; i++) {
+        transform_t chunk_transform = {
+            .position = {start + x * 32, -34.0f, start + z * 32 + 1},
+            .rotation = {0.0f, 0.0f, 0.0f},
+            .scale = {1.0f, 1.0f, 1.0f}
+        };
+
+        x++;
+        if (x >= 32) {
+            x = 0;
+            z++;
+        }
+
+        glBindVertexArray(rcs[i].vao);
+
+        glBindTexture(GL_TEXTURE_2D, rc_defaults.texture_id);
+
+        mat4_t mvp = mat4_mul(mat4_model(&chunk_transform), camera_mat);
+        glUniformMatrix4fv(rc_defaults.mvp_matrix_loc, 1, GL_FALSE, (float*)mvp.m);
+        glDrawElements(GL_TRIANGLES, rcs[i].indices, GL_UNSIGNED_INT, 0);
+    }
+
+    glUseProgram(0);
+
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+        printf("OpenGL Error: 0x%x\n", error);
+    }
+
+    /*
     glUseProgram(default_render_blocks[1].shader_id);
     mat4_t camera_mat = mat4_mul(camera.view, camera.proj);
 
@@ -172,4 +238,5 @@ void render_chunk(chunk_t* chunk) {
     if (error != GL_NO_ERROR) {
         printf("OpenGL Error: 0x%x\n", error);
     }
+    */
 }
