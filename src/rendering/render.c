@@ -109,7 +109,7 @@ void render_init_temp_chunk() {
         default_render_blocks[i].vbo = vbo;
         default_render_blocks[i].ebo = ebo;
 
-        default_render_blocks[i].test_matrix_loc = glGetUniformLocation(shader_id, "test");
+        default_render_blocks[i].mvp_matrix_loc = glGetUniformLocation(shader_id, "mvp");
         default_render_blocks[i].texture_loc = glGetUniformLocation(shader_id, "texture_sampler");
         default_render_blocks[i].texture_id = texture->id;
     }
@@ -145,7 +145,7 @@ void render_chunk(chunk_t* chunk) {
     int start = -512;
     for (int i = 0; i < render_block_count; i++) {
         transform_t chunk_transform = {
-            .position = {start + x * 32, -128.0f, start + z * 32 + 1},
+            .position = {start + x * 32, -34.0f, start + z * 32 + 1},
             .rotation = {0.0f, 0.0f, 0.0f},
             .scale = {1.0f, 1.0f, 1.0f}
         };
@@ -160,9 +160,8 @@ void render_chunk(chunk_t* chunk) {
 
         glBindTexture(GL_TEXTURE_2D, default_render_blocks[i].texture_id);
 
-        mat4_t test = mat4_mul(mat4_model(&chunk_transform), camera_mat);
-        glUniformMatrix4fv(default_render_blocks[i].test_matrix_loc, 1, GL_FALSE, (float*)test.m);
-        GLenum error = glGetError();
+        mat4_t mvp = mat4_mul(mat4_model(&chunk_transform), camera_mat);
+        glUniformMatrix4fv(default_render_blocks[i].mvp_matrix_loc, 1, GL_FALSE, (float*)mvp.m);
 
         glDrawElements(GL_TRIANGLES, base_chunks[i].index_count, GL_UNSIGNED_INT, 0);
     }

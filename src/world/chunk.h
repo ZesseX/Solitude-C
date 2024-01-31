@@ -21,7 +21,7 @@ GLuint* get_chunk_block_indices(chunk_t* chunk);
 
 void get_block_visible_tris(chunk_t* chunk, vec3_t block, GLuint* GLuint, int* count);
 
-static int has_block(chunk_t* chunk, vec3_t pos);
+int has_block(chunk_t* chunk, vec3_t pos);
 static void push_tris_into_array(int face, GLuint* array, int* index);
 
 #endif

@@ -31,11 +31,7 @@ typedef struct {
     GLuint texture_id;
 
     GLuint texture_loc;
-    GLuint matrix_view_loc;
-    GLuint matrix_projection_loc;
-    GLuint matrix_model_loc;
-
-    GLuint test_matrix_loc;
+    GLuint mvp_matrix_loc;
 } render_block_t;
 
 int renderer_init();
