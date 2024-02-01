@@ -1,99 +1,102 @@
 #include "render_debug.h"
 
-void APIENTRY GLDebugMessageCallback(
-    GLenum source, GLenum type, GLuint id, GLenum severity, 
-    GLsizei length, const GLchar *msg, const void *data) {
+static int ogl_debug_flags = 0;
 
-    char* _source;
-    char* _type;
-    char* _severity;
+void opengl_debug_init(const int flags) {
+    ogl_debug_flags = flags;
+}
 
-    switch (source) {
+void APIENTRY opengl_debug_msg_callback(
+    GLenum src, GLenum type, GLuint id, GLenum severity,
+    GLsizei length, const GLchar* msg, const void* data) {
+    
+    char* src_text;
+    char* type_text;
+    char* severity_text;
+
+    if (severity = GL_DEBUG_SEVERITY_NOTIFICATION) {
+        if (!(ogl_debug_flags & OGL_DEBUG_FLAG_NOTIFICATION)) return;
+        severity_text = "NOTIFICATION";
+    }
+    else if (severity = GL_DEBUG_SEVERITY_LOW) {
+        if (!(ogl_debug_flags & GL_DEBUG_SEVERITY_LOW)) return;
+        severity_text = "LOW";
+    }
+    else if (severity = GL_DEBUG_SEVERITY_MEDIUM) {
+        if (!(ogl_debug_flags & GL_DEBUG_SEVERITY_MEDIUM)) return;
+        severity_text = "MEDIUM";
+    }
+    else if (severity = GL_DEBUG_SEVERITY_HIGH) {
+        if (!(ogl_debug_flags & GL_DEBUG_SEVERITY_HIGH)) return;
+        severity_text = "HIGH";
+    }
+    else {
+        severity_text = "UNKNOWN";
+    }
+
+    switch (src) {
         case GL_DEBUG_SOURCE_API:
-        _source = "API";
+        src_text = "API";
         break;
 
         case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
-        _source = "WINDOW SYSTEM";
+        src_text = "WINDOW SYSTEM";
         break;
 
         case GL_DEBUG_SOURCE_SHADER_COMPILER:
-        _source = "SHADER COMPILER";
+        src_text = "SHADER COMPILER";
         break;
 
         case GL_DEBUG_SOURCE_THIRD_PARTY:
-        _source = "THIRD PARTY";
+        src_text = "THIRD PARTY";
         break;
 
         case GL_DEBUG_SOURCE_APPLICATION:
-        _source = "APPLICATION";
+        src_text = "APPLICATION";
         break;
 
         case GL_DEBUG_SOURCE_OTHER:
-        _source = "UNKNOWN";
+        src_text = "UNKNOWN";
         break;
 
         default:
-        _source = "UNKNOWN";
+        src_text = "UNKNOWN";
         break;
     }
 
     switch (type) {
         case GL_DEBUG_TYPE_ERROR:
-        _type = "ERROR";
+        type_text = "ERROR";
         break;
 
         case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
-        _type = "DEPRECATED BEHAVIOR";
+        type_text = "DEPRECATED BEHAVIOR";
         break;
 
         case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-        _type = "UDEFINED BEHAVIOR";
+        type_text = "UDEFINED BEHAVIOR";
         break;
 
         case GL_DEBUG_TYPE_PORTABILITY:
-        _type = "PORTABILITY";
+        type_text = "PORTABILITY";
         break;
 
         case GL_DEBUG_TYPE_PERFORMANCE:
-        _type = "PERFORMANCE";
+        type_text = "PERFORMANCE";
         break;
 
         case GL_DEBUG_TYPE_OTHER:
-        _type = "OTHER";
+        type_text = "OTHER";
         break;
 
         case GL_DEBUG_TYPE_MARKER:
-        _type = "MARKER";
+        type_text = "MARKER";
         break;
 
         default:
-        _type = "UNKNOWN";
+        type_text = "UNKNOWN";
         break;
     }
 
-    switch (severity) {
-        case GL_DEBUG_SEVERITY_HIGH:
-        _severity = "HIGH";
-        break;
-
-        case GL_DEBUG_SEVERITY_MEDIUM:
-        _severity = "MEDIUM";
-        break;
-
-        case GL_DEBUG_SEVERITY_LOW:
-        _severity = "LOW";
-        break;
-
-        case GL_DEBUG_SEVERITY_NOTIFICATION:
-        _severity = "NOTIFICATION";
-        return;
-
-        default:
-        _severity = "UNKNOWN";
-        break;
-    }
-
-    printf("%d: %s of %s severity, raised from %s: %s\n",
-            id, _type, _severity, _source, msg);
+    printf("[OpenGL] %d: %s of %s severity from %s: %s\n", id, type_text, severity_text, src_text, msg);
 }
