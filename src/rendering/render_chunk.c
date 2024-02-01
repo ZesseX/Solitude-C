@@ -8,7 +8,7 @@ void checkGLError(const char* location) {
 }
 
 int update_render_chunk(chunk_t* chunk, render_chunk_t* rc) {
-    GLfloat* verts = (GLfloat*)malloc(CHUNK_TOTAL_BLOCK_COUNT * (3 * 24) * sizeof(GLfloat));
+    GLfloat* verts = (GLfloat*)malloc(CHUNK_TOTAL_BLOCK_COUNT * (3 * 4 * 6) * sizeof(GLfloat));
     int verts_count = 0;
 
     GLuint* indices = (GLuint*)malloc(CHUNK_TOTAL_BLOCK_COUNT * (6 * 6) * sizeof(GLuint));
@@ -16,6 +16,28 @@ int update_render_chunk(chunk_t* chunk, render_chunk_t* rc) {
 
     int visible_faces[6];
     vec3_t pos;
+
+    for (int x = 0; x < CHUNK_SIZE; x++) {
+        for (int y = 0; y < CHUNK_SIZE; y++) {
+            for (int z = 0; z < CHUNK_SIZE; z++) {
+                int id = x + CHUNK_SIZE * (y + CHUNK_SIZE * z);
+
+                pos.x = x;
+                pos.y = y;
+                pos.z = z;
+
+                get_block_visible_faces(chunk, pos, visible_faces);
+                for (int i = 0; i < 6; i++){
+                    if(!visible_faces[i]) continue;
+
+                    push_block_vertices(i, pos, verts, &verts_count);
+                    push_block_indices((verts_count / 3) - 4, i, indices, &indices_count);
+                }
+            }
+        }  
+    }
+
+    /*
     for (int i = 0; i < CHUNK_TOTAL_BLOCK_COUNT; i++) {
         pos.x = i % CHUNK_SIZE;
         pos.y = (i / CHUNK_SIZE) % CHUNK_SIZE;
@@ -29,7 +51,7 @@ int update_render_chunk(chunk_t* chunk, render_chunk_t* rc) {
             push_block_indices(verts_count / 3, j, indices, &indices_count);
         }
     }
-
+    */
     verts = (GLfloat*)realloc(verts, sizeof(GLfloat) * verts_count);
     indices = (GLuint*)realloc(indices, sizeof(GLuint) * indices_count);
 
@@ -141,7 +163,6 @@ void push_block_vertices(int face, vec3_t pos, GLfloat* verts, int* count) {
 }
 
 void push_block_indices(int offset, int face, GLuint* indices, int* count) {
-    offset *= 4;
     switch (face) {
         case 0:
             indices[(*count)++] = offset + 0;
