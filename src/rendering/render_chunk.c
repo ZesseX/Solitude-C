@@ -1,12 +1,5 @@
 #include "render_chunk.h"
 
-void checkGLError(const char* location) {
-    GLenum err;
-    while ((err = glGetError()) != GL_NO_ERROR) {
-        printf("OpenGL error at %s: %d\n", location, err);
-    }
-}
-
 int update_render_chunk(chunk_t* chunk, render_chunk_t* rc) {
     GLfloat* verts = (GLfloat*)malloc(CHUNK_TOTAL_BLOCK_COUNT * (3 * 4 * 6) * sizeof(GLfloat));
     int verts_count = 0;
@@ -16,7 +9,6 @@ int update_render_chunk(chunk_t* chunk, render_chunk_t* rc) {
 
     int visible_faces[6];
     vec3_t pos;
-
     for (int x = 0; x < CHUNK_SIZE; x++) {
         for (int y = 0; y < CHUNK_SIZE; y++) {
             for (int z = 0; z < CHUNK_SIZE; z++) {
@@ -37,21 +29,6 @@ int update_render_chunk(chunk_t* chunk, render_chunk_t* rc) {
         }  
     }
 
-    /*
-    for (int i = 0; i < CHUNK_TOTAL_BLOCK_COUNT; i++) {
-        pos.x = i % CHUNK_SIZE;
-        pos.y = (i / CHUNK_SIZE) % CHUNK_SIZE;
-        pos.z = i / (CHUNK_SIZE * CHUNK_SIZE);
-
-        get_block_visible_faces(chunk, pos, visible_faces);
-        for (int j = 0; j < 6; j++) {
-            if(visible_faces[j] == 0) continue;
-
-            push_block_vertices(j, pos, verts, &verts_count);
-            push_block_indices(verts_count / 3, j, indices, &indices_count);
-        }
-    }
-    */
     verts = (GLfloat*)realloc(verts, sizeof(GLfloat) * verts_count);
     indices = (GLuint*)realloc(indices, sizeof(GLuint) * indices_count);
 
