@@ -7,7 +7,7 @@ camera_t camera;
 
 render_block_t* default_render_blocks;
 chunk_t base_chunk;
-int render_block_count = 128;
+int render_block_count = 64;
 
 float last_frame_time = 0;
 
@@ -30,7 +30,7 @@ int renderer_init(){
     }
 
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(0);
+    glfwSwapInterval(1);
 
     if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         printf("Failed to initialize glad\n");
@@ -86,9 +86,9 @@ void render_init_temp_chunk() {
 
     glUseProgram(rc_defaults.shader_id);
 
-    rcs = (render_chunk_t*)malloc(sizeof(render_chunk_t*) * render_block_count);
+    rcs = (render_chunk_t*)malloc(sizeof(render_chunk_t) * render_block_count);
     texture_t* texture = load_texture("textures/32x32.tga");
-    glGenerateMipmap(texture->id);
+    //glGenerateMipmap(texture->id);
 
     for (int i = 0; i < render_block_count; i++) {
         update_render_chunk(&base_chunk, &rcs[i]);
@@ -175,7 +175,7 @@ void render_chunk(chunk_t* chunk) {
     int start = -64;
     for (int i = 0; i < render_block_count; i++) {
         transform_t chunk_transform = {
-            .position = {start + x * 32, -34.0f, start + z * 32 + 1},
+            .position = {start + x * 32, -16.0f, start + z * 32 + 1},
             .rotation = {0.0f, 0.0f, 0.0f},
             .scale = {1.0f, 1.0f, 1.0f}
         };
