@@ -5,9 +5,8 @@
 #include <GLFW/glfw3.h>
 #include "../math/vec3.h"
 
-#define CHUNK_SIZE 32
+#define CHUNK_SIZE 38
 #define CHUNK_TOTAL_BLOCK_COUNT (CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE)
-#define CHUNK_VERTEX_COUNT (CHUNK_TOTAL_BLOCK_COUNT * 24 * sizeof(GLuint))
 
 typedef struct {
     uint16_t* blocks;

@@ -120,7 +120,7 @@ void render_chunk(chunk_t* chunk) {
 
     int x = 0;
     int z = 0;
-    int start = -64;
+    int start = -render_block_count / 2;
     for (int i = 0; i < render_block_count; i++) {
         transform_t chunk_transform = {
             .position = {start + x * CHUNK_SIZE, -CHUNK_SIZE / 2, start + z * CHUNK_SIZE + 1},

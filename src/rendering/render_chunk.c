@@ -8,21 +8,18 @@ int update_render_chunk(chunk_t* chunk, render_chunk_t* rc) {
     int indices_count = 0;
 
     int visible_faces[6];
-    vec3_t pos;
     for (int x = 0; x < CHUNK_SIZE; x++) {
         for (int y = 0; y < CHUNK_SIZE; y++) {
             for (int z = 0; z < CHUNK_SIZE; z++) {
-                int id = x + CHUNK_SIZE * (y + CHUNK_SIZE * z);
+                if(chunk->blocks[x + CHUNK_SIZE * (y + CHUNK_SIZE * z)] == 0) {
+                    continue;
+                }
 
-                pos.x = x;
-                pos.y = y;
-                pos.z = z;
-
-                get_block_visible_faces(chunk, pos, visible_faces);
+                get_block_visible_faces(chunk, (vec3_t){x, y, z}, visible_faces);
                 for (int i = 0; i < 6; i++){
                     if(!visible_faces[i]) continue;
 
-                    push_block_vertices(i, pos, verts, &verts_count);
+                    push_block_vertices(i, (vec3_t){x, y, z}, verts, &verts_count);
                     push_block_indices((verts_count / 3) - 4, i, indices, &indices_count);
                 }
             }
@@ -56,6 +53,9 @@ int update_render_chunk(chunk_t* chunk, render_chunk_t* rc) {
     rc->ebo = ebo;
 
     rc->indices = indices_count;
+
+    free(verts);
+    free(indices);
 
     return 1;
 }
@@ -196,4 +196,10 @@ void push_block_indices(int offset, int face, GLuint* indices, int* count) {
             indices[(*count)++] = offset + 1;
             break;
     }
+}
+
+void free_render_chunk_buffers(render_chunk_t* rc) {
+    glDeleteBuffers(1, &rc->vbo);
+    glDeleteBuffers(1, &rc->ebo);
+    glDeleteVertexArrays(1, &rc->vao);
 }
