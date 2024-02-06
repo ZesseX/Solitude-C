@@ -88,6 +88,7 @@ void render_init_temp_chunk() {
     for (int i = 0; i < render_block_count; i++) {
         update_render_chunk(&base_chunk, &rcs[i]);
     }
+
     rc_defaults.texture_id = texture->id;
     rc_defaults.mvp_matrix_loc = glGetUniformLocation(rc_defaults.shader_id, "mvp");;
     rc_defaults.texture_loc = glGetUniformLocation(rc_defaults.shader_id, "texture_sampler");

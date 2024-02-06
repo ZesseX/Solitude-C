@@ -8,10 +8,10 @@ int update_render_chunk(chunk_t* chunk, render_chunk_t* rc) {
     int indices_count = 0;
 
     int visible_faces[6];
-    for (int x = 0; x < CHUNK_SIZE; x++) {
-        for (int y = 0; y < CHUNK_SIZE; y++) {
+    for (int y = 0; y < CHUNK_SIZE; y++) {
+        for (int x = 0; x < CHUNK_SIZE; x++) {
             for (int z = 0; z < CHUNK_SIZE; z++) {
-                if(chunk->blocks[x + CHUNK_SIZE * (y + CHUNK_SIZE * z)] == 0) {
+                if(chunk->blocks[y * CHUNK_SIZE_SQUARED + x * CHUNK_SIZE + z] == 0) {
                     continue;
                 }
 

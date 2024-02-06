@@ -4,8 +4,10 @@
 #include <stdlib.h>
 #include <GLFW/glfw3.h>
 #include "../math/vec3.h"
+#include "../utils/noise.h"
 
 #define CHUNK_SIZE 38
+#define CHUNK_SIZE_SQUARED (CHUNK_SIZE * CHUNK_SIZE)
 #define CHUNK_TOTAL_BLOCK_COUNT (CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE)
 
 typedef struct {

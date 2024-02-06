@@ -12,6 +12,7 @@
 // TODO: Remove some of the Y axis chunks?, no real need for having chunks at y = ~10 000 km
 // Mariana Trench depth + Mount Everest = ~20km
 
+#define WORLD_OCREE_FACE_COUNT 6
 #define WORLD_OCTREE_DEPTH 9
 #define WORLD_OCTREE_SIZE_PER_AXIS 262144
 
@@ -26,6 +27,13 @@ struct world_octree_node_t{
     } world_octree_ptr;
 };
 
+void world_octrees_init_empty();
+
 world_octree_node_t* world_octree_get_final_node(int face, vec3_t pos);
+
+void world_octree_init_node(world_octree_node_t* node);
+
+void world_octree_generate_final_node(world_octree_node_t* node, int face, vec3_t pos);
+
 
 #endif
