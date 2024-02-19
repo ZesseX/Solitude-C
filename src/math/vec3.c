@@ -9,7 +9,7 @@ vec3_t vec3_sub(vec3_t a, vec3_t b) {
 }
 
 float vec3_magnitude(vec3_t* v) {
-    return sqrtf(v->x * v->x + v->y * v->y + v->z + v->z);
+    return sqrtf(v->x * v->x + v->y * v->y + v->z * v->z);
 }
 
 void vec3_normalize(vec3_t* v) {

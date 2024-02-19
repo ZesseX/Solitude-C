@@ -34,7 +34,7 @@ typedef struct {
 
     GLuint texture_loc;
     GLuint mvp_matrix_loc;
-} render_block_t;
+} render_context_t;
 
 int renderer_init();
 int renderer_update();

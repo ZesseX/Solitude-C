@@ -18,5 +18,5 @@ void game_loop(){
 }
 
 void game_cleanup() {
-
+    printf("Game cleanup\n");
 }

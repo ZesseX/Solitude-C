@@ -9,13 +9,11 @@
 #include "../math/vec2.h"
 #include "../math/math_utils.h"
 
-#define PERLIN_NOISE_X_PRIME 65537
-#define PERLIN_NOISE_Y_PRIME 4294967291
+int noise_from_permutation(int x, int y);
+float linear_interpolate(float x, float y, float s);
+float smooth_interpolate(float x, float y, float s);
+float perlin_noise_per_depth(float x, float y);
+float perlin_noise(float x, float y, float freq, int depth);
 
-float perlin_noise(vec2_t pos);
-
-static float perlin_interpolate(float a, float b, float w);
-static vec2_t perlin_random_gradient(vec2_t iv);
-static float perlin_dot_grid_gradient(vec2_t iv, vec2_t pos);
 
 #endif

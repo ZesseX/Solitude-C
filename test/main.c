@@ -2,10 +2,12 @@
 
 #include "tester/tester.h"
 
-// Add more test functions as needed
+#include "test_math.h"
+
 int main() {
-    
-    ASSERT_EQUAL_INT(0, 1);
+    TESTER_INIT;
+
+    test_math();
 
     getchar();
 

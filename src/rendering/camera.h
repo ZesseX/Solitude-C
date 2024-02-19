@@ -11,7 +11,7 @@
 #include <GLFW/glfw3.h>
 
 #define CAMERA_ROTATE_SPEED 5
-#define CAMERA_MOVEMENT_SPEED 5
+#define CAMERA_MOVEMENT_SPEED 20
 #define CAMERA_FOV 70
 
 typedef struct {

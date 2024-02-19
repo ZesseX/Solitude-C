@@ -19,45 +19,54 @@ static int permutation[] = {
     184,  84, 204, 176, 115, 121,  50,  45, 127,   4, 150, 254, 138, 236, 205,  93,
     222, 114,  67,  29,  24,  72, 243, 141, 128, 195,  78,  66, 215,  61, 156, 180 };
 
-float perlin_noise(vec2_t pos) {
-    int x0 = (int)floorf(pos.x);
-    int x1 = x0 + 1;
-    int y0 = (int)floorf(pos.y);
-    int y1 = y0 + 1;
-
-    float sx = pos.x - (float)x0;
-    float sy = pos.y - (float)y0;
-
-    sx += 0.1f;
-    sy += 0.1f;
-
-    float n0, n1, ix0, ix1;
-    n0 = perlin_dot_grid_gradient((vec2_t){x0, y0}, pos);    
-    n1 = perlin_dot_grid_gradient((vec2_t){x1, y0}, pos);    
-    ix0 = perlin_interpolate(n0, n1, sx);
-
-    n0 = perlin_dot_grid_gradient((vec2_t){x0, y1}, pos);
-    n1 = perlin_dot_grid_gradient((vec2_t){x1, y1}, pos);
-    ix1 = perlin_interpolate(n0, n1, sx);
-
-    float value = perlin_interpolate(ix0, ix1, sy);
-    return value;
+int noise_from_permutation(int x, int y)
+{
+    int tmp = permutation[(y + get_seed()) % 256];
+    return permutation[(tmp + x) % 256];
 }
 
-static float perlin_interpolate(float a, float b, float w) {
-    return (b - a) * w + a;
+float linear_interpolate(float x, float y, float s)
+{
+    return x + s * (y-x);
 }
 
-static vec2_t perlin_random_gradient(vec2_t iv) {
-    srand(get_seed() + iv.x * PERLIN_NOISE_X_PRIME + iv.y * PERLIN_NOISE_Y_PRIME);
-    float r = rand() * (PI / RAND_MAX * 2);
-    //printf("%.2f\n", r);
-    return (vec2_t){cosf(r), sinf(r)};
+float smooth_interpolate(float x, float y, float s)
+{
+    return linear_interpolate(x, y, s * s * (3 - 2 * s));
 }
 
-static float perlin_dot_grid_gradient(vec2_t iv, vec2_t pos) {
-    vec2_t gradient = perlin_random_gradient(iv);
-    float dx = pos.x - (float)iv.x;
-    float dy = pos.y - (float)iv.y;
-    return dx * gradient.x + dy * gradient.y;
+float perlin_noise_per_depth(float x, float y)
+{
+    int x_int = x;
+    int y_int = y;
+
+    float x_frac = x - x_int;
+    float y_frac = y - y_int;
+
+    int s = noise_from_permutation(x_int, y_int);
+    int t = noise_from_permutation(x_int+1, y_int);
+    int u = noise_from_permutation(x_int, y_int+1);
+    int v = noise_from_permutation(x_int+1, y_int+1);
+    
+    float low = smooth_interpolate(s, t, x_frac);
+    float high = smooth_interpolate(u, v, x_frac);
+    return smooth_interpolate(low, high, y_frac);
+}
+
+float perlin_noise(float x, float y, float freq, int depth)
+{
+    float xa = x * (freq / 10);
+    float ya = y * (freq / 10);
+    
+    float amp = 1.0, fin = 0, div = 0.0;
+    for(int i = 0; i < depth; i++)
+    {
+        div += 256 * amp;
+        fin += perlin_noise_per_depth(xa, ya) * amp;
+        amp /= 2;
+        xa *= 2;
+        ya *= 2;
+    }
+
+    return fin/div;
 }

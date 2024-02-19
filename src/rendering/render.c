@@ -5,8 +5,7 @@ GLFWwindow* window = NULL;
 transform_t cam_trans;
 camera_t camera;
 
-render_block_t* default_render_blocks;
-chunk_t base_chunk;
+chunk_t* base_chunks;
 int render_block_count = 64;
 
 float last_frame_time = 0;
@@ -77,7 +76,10 @@ void render_init_temp_chunk() {
         // TODO: Do something when loading / compiling the shader fails.
     }
 
-    init_chunk(&base_chunk);
+    base_chunks = (chunk_t*)malloc(sizeof(chunk_t) * render_block_count);
+    for (int i = 0; i < render_block_count; i++) {
+        init_chunk(&base_chunks[i]);
+    }
 
     glUseProgram(rc_defaults.shader_id);
 
@@ -86,7 +88,7 @@ void render_init_temp_chunk() {
     glGenerateMipmap(texture->id);
 
     for (int i = 0; i < render_block_count; i++) {
-        update_render_chunk(&base_chunk, &rcs[i]);
+        update_render_chunk(&base_chunks[i], &rcs[i]);
     }
 
     rc_defaults.texture_id = texture->id;
@@ -124,7 +126,7 @@ void render_chunk(chunk_t* chunk) {
     int start = -render_block_count / 2;
     for (int i = 0; i < render_block_count; i++) {
         transform_t chunk_transform = {
-            .position = {start + x * CHUNK_SIZE, -CHUNK_SIZE / 2, start + z * CHUNK_SIZE + 1},
+            .position = {start + x * CHUNK_SIZE, -CHUNK_SIZE, 0.0f},
             .rotation = {0.0f, 0.0f, 0.0f},
             .scale = {1.0f, 1.0f, 1.0f}
         };

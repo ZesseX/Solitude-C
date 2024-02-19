@@ -1,7 +1,7 @@
 #include "render_chunk.h"
 
 int update_render_chunk(chunk_t* chunk, render_chunk_t* rc) {
-    GLfloat* verts = (GLfloat*)malloc(CHUNK_TOTAL_BLOCK_COUNT * (3 * 4 * 6) * sizeof(GLfloat));
+    GLfloat* verts = (GLfloat*)malloc(CHUNK_TOTAL_BLOCK_COUNT * ((3 + 2) * 4 * 6) * sizeof(GLfloat));
     int verts_count = 0;
 
     GLuint* indices = (GLuint*)malloc(CHUNK_TOTAL_BLOCK_COUNT * (6 * 6) * sizeof(GLuint));
@@ -20,7 +20,7 @@ int update_render_chunk(chunk_t* chunk, render_chunk_t* rc) {
                     if(!visible_faces[i]) continue;
 
                     push_block_vertices(i, (vec3_t){x, y, z}, verts, &verts_count);
-                    push_block_indices((verts_count / 3) - 4, i, indices, &indices_count);
+                    push_block_indices((verts_count / (3 + 2)) - 4, i, indices, &indices_count);
                 }
             }
         }  
@@ -42,8 +42,13 @@ int update_render_chunk(chunk_t* chunk, render_chunk_t* rc) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices_count, indices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
+    // pos
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)0);
     glEnableVertexAttribArray(0);
+
+    // uv
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -132,10 +137,59 @@ void push_block_vertices(int face, vec3_t pos, GLfloat* verts, int* count) {
             break;
     }
 
+    #define VERTEX_UV_BOTTOM_LEFT       (vec2_t) {0.0f, 0.0f}
+    #define VERTEX_UV_BOTTOM_RIGHT      (vec2_t) {1.0f, 0.0f}
+    #define VERTEX_UV_TOP_LEFT          (vec2_t) {0.0f, 1.0f}
+    #define VERTEX_UV_TOP_RIGHT         (vec2_t) {1.0f, 1.0f}
+
+    vec2_t vert_uv[4];
+    switch (face) {
+        case 0:
+            vert_uv[0] = VERTEX_UV_BOTTOM_LEFT;
+            vert_uv[1] = VERTEX_UV_BOTTOM_RIGHT;
+            vert_uv[2] = VERTEX_UV_TOP_RIGHT;
+            vert_uv[3] = VERTEX_UV_TOP_LEFT;
+            break;
+        case 1:
+            vert_uv[0] = VERTEX_UV_BOTTOM_RIGHT;
+            vert_uv[1] = VERTEX_UV_TOP_RIGHT;
+            vert_uv[2] = VERTEX_UV_BOTTOM_LEFT;
+            vert_uv[3] = VERTEX_UV_TOP_LEFT;
+            break;
+        case 2:
+            vert_uv[0] = VERTEX_UV_BOTTOM_LEFT;
+            vert_uv[1] = VERTEX_UV_BOTTOM_RIGHT;
+            vert_uv[2] = VERTEX_UV_TOP_RIGHT;
+            vert_uv[3] = VERTEX_UV_TOP_LEFT;
+            break;
+        case 3:
+            vert_uv[0] = VERTEX_UV_BOTTOM_LEFT;
+            vert_uv[1] = VERTEX_UV_TOP_LEFT;
+            vert_uv[2] = VERTEX_UV_BOTTOM_RIGHT;
+            vert_uv[3] = VERTEX_UV_TOP_RIGHT;
+            break;
+        case 4:
+            vert_uv[0] = VERTEX_UV_BOTTOM_LEFT;
+            vert_uv[1] = VERTEX_UV_BOTTOM_RIGHT;
+            vert_uv[2] = VERTEX_UV_TOP_LEFT;
+            vert_uv[3] = VERTEX_UV_TOP_RIGHT;
+            break;
+        case 5:
+            vert_uv[0] = VERTEX_UV_BOTTOM_LEFT;
+            vert_uv[1] = VERTEX_UV_BOTTOM_RIGHT;
+            vert_uv[2] = VERTEX_UV_TOP_LEFT;
+            vert_uv[3] = VERTEX_UV_TOP_RIGHT;
+            break;
+    }
+
     for (int i = 0; i < 4; i++) {
         verts[(*count)++] = vert_pos[i].x;
         verts[(*count)++] = vert_pos[i].y;
         verts[(*count)++] = vert_pos[i].z;
+
+        // push uvs
+        verts[(*count)++] = vert_uv[i].x;
+        verts[(*count)++] = vert_uv[i].y;
     }
 }
 
