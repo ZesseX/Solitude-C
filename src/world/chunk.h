@@ -12,9 +12,11 @@
 
 typedef struct {
     uint16_t* blocks;
+
+    // TODO: Add extra stuff for blocks actively being affected by gravity
 } chunk_t;
 
-void init_chunk(chunk_t* chunk);
+void init_chunk(chunk_t* chunk, vec2_t pos);
 
 int has_block(chunk_t* chunk, vec3_t pos);
 

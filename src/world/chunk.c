@@ -2,7 +2,7 @@
 
 static int chunk_index = 0;
 
-void init_chunk(chunk_t* chunk) {
+void init_chunk(chunk_t* chunk, vec2_t pos) {
     //chunk = (chunk_t*)malloc(sizeof(chunk_t));
     chunk->blocks = (uint16_t*)malloc(CHUNK_TOTAL_BLOCK_COUNT * sizeof(uint16_t));
 
@@ -10,7 +10,7 @@ void init_chunk(chunk_t* chunk) {
 
     for (int x = 0; x < CHUNK_SIZE; x++) {
         for (int z = 0; z < CHUNK_SIZE; z++) {
-            max_heights[x][z] = CHUNK_SIZE * perlin_noise(x + (chunk_index * CHUNK_SIZE), z, 0.2f, 2);
+            max_heights[x][z] = CHUNK_SIZE * perlin_noise(x + (pos.x * CHUNK_SIZE), z + (pos.y * CHUNK_SIZE), 0.2f, 2);
         }
     }
 

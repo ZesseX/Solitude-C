@@ -58,7 +58,7 @@ float perlin_noise(float x, float y, float freq, int depth)
     float xa = x * (freq / 10);
     float ya = y * (freq / 10);
     
-    float amp = 1.0, fin = 0, div = 0.0;
+    float amp = 1.0f, fin = 0.0f, div = 0.0f;
     for(int i = 0; i < depth; i++)
     {
         div += 256 * amp;

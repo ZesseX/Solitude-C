@@ -5,8 +5,8 @@ GLFWwindow* window = NULL;
 transform_t cam_trans;
 camera_t camera;
 
-chunk_t* base_chunks;
-int render_block_count = 64;
+chunk_t** base_chunks;
+int render_block_count = 16;
 
 float last_frame_time = 0;
 
@@ -58,7 +58,7 @@ int renderer_update() {
     return glfwWindowShouldClose(window);
 }
 
-render_chunk_t* rcs;
+render_chunk_t** rcs;
 typedef struct {
     GLuint shader_id;
     GLuint texture_id;
@@ -76,24 +76,32 @@ void render_init_temp_chunk() {
         // TODO: Do something when loading / compiling the shader fails.
     }
 
-    base_chunks = (chunk_t*)malloc(sizeof(chunk_t) * render_block_count);
-    for (int i = 0; i < render_block_count; i++) {
-        init_chunk(&base_chunks[i]);
+    base_chunks = (chunk_t**)malloc(sizeof(chunk_t*) * render_block_count);
+    for (int x = 0; x < render_block_count; x++) {
+        base_chunks[x] = (chunk_t*)malloc(sizeof(chunk_t) * render_block_count);
+        for (int z = 0; z < render_block_count; z++) {
+            init_chunk(&base_chunks[x][z], (vec2_t){x, z});
+        }
     }
 
     glUseProgram(rc_defaults.shader_id);
 
-    rcs = (render_chunk_t*)malloc(sizeof(render_chunk_t) * render_block_count);
+    rcs = (render_chunk_t**)malloc(sizeof(render_chunk_t*) * render_block_count);
+    for (int x = 0; x < render_block_count; x++) {
+        rcs[x] = (render_chunk_t*)malloc(sizeof(render_chunk_t) * render_block_count);
+        for (int z = 0; z < render_block_count; z++) {
+            update_render_chunk(&base_chunks[x][z], &rcs[x][z]);
+        }
+    }
+
     texture_t* texture = load_texture("textures/32x32.tga");
     glGenerateMipmap(texture->id);
-
-    for (int i = 0; i < render_block_count; i++) {
-        update_render_chunk(&base_chunks[i], &rcs[i]);
-    }
 
     rc_defaults.texture_id = texture->id;
     rc_defaults.mvp_matrix_loc = glGetUniformLocation(rc_defaults.shader_id, "mvp");;
     rc_defaults.texture_loc = glGetUniformLocation(rc_defaults.shader_id, "texture_sampler");
+
+    camera.transform.position = (vec3_t){0.0f, 32.0f, 0.0f};
 }
 
 void render_update_start() {
@@ -121,30 +129,23 @@ void render_chunk(chunk_t* chunk) {
     glUseProgram(rc_defaults.shader_id);
     mat4_t camera_mat = mat4_mul(camera.view, camera.proj);
 
-    int x = 0;
-    int z = 0;
-    int start = -render_block_count / 2;
-    for (int i = 0; i < render_block_count; i++) {
-        transform_t chunk_transform = {
-            .position = {start + x * CHUNK_SIZE, -CHUNK_SIZE, 0.0f},
-            .rotation = {0.0f, 0.0f, 0.0f},
-            .scale = {1.0f, 1.0f, 1.0f}
-        };
+    for (int x = 0; x < render_block_count; x++) {
+        for (int z = 0; z < render_block_count; z++) {
+            // TODO: No need for chunk rotation / scale, theyre always the same
+            transform_t chunk_transform = {
+                .position = {x * CHUNK_SIZE, 0.0f, z * CHUNK_SIZE},
+                .rotation = {0.0f, 0.0f, 0.0f},
+                .scale = {1.0f, 1.0f, 1.0f}
+            };
 
-        x++;
-        if (x >= CHUNK_SIZE) {
-            x = 0;
-            z++;
+            glBindVertexArray(rcs[x][z].vao);
+            glBindTexture(GL_TEXTURE_2D, rc_defaults.texture_id);
+
+            mat4_t mvp = mat4_mul(mat4_model(&chunk_transform), camera_mat);
+            glUniformMatrix4fv(rc_defaults.mvp_matrix_loc, 1, GL_FALSE, (float*)mvp.m);
+            glDrawElements(GL_TRIANGLES, rcs[x][z].indices, GL_UNSIGNED_INT, 0);
         }
-
-        glBindVertexArray(rcs[i].vao);
-
-        glBindTexture(GL_TEXTURE_2D, rc_defaults.texture_id);
-
-        mat4_t mvp = mat4_mul(mat4_model(&chunk_transform), camera_mat);
-        glUniformMatrix4fv(rc_defaults.mvp_matrix_loc, 1, GL_FALSE, (float*)mvp.m);
-        glDrawElements(GL_TRIANGLES, rcs[i].indices, GL_UNSIGNED_INT, 0);
     }
-
+    
     glUseProgram(0);
 }
