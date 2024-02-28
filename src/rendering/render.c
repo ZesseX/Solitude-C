@@ -5,8 +5,8 @@ GLFWwindow* window = NULL;
 transform_t cam_trans;
 camera_t camera;
 
-chunk_t** base_chunks;
-int render_block_count = 16;
+//chunk_t** base_chunks;
+//int render_block_count = 16;
 
 float last_frame_time = 0;
 
@@ -58,7 +58,7 @@ int renderer_update() {
     return glfwWindowShouldClose(window);
 }
 
-render_chunk_t** rcs;
+render_chunk_t* rcs;
 typedef struct {
     GLuint shader_id;
     GLuint texture_id;
@@ -76,22 +76,23 @@ void render_init_temp_chunk() {
         // TODO: Do something when loading / compiling the shader fails.
     }
 
-    base_chunks = (chunk_t**)malloc(sizeof(chunk_t*) * render_block_count);
-    for (int x = 0; x < render_block_count; x++) {
-        base_chunks[x] = (chunk_t*)malloc(sizeof(chunk_t) * render_block_count);
-        for (int z = 0; z < render_block_count; z++) {
-            init_chunk(&base_chunks[x][z], (vec2_t){x, z});
-        }
-    }
+    //base_chunks = (chunk_t**)malloc(sizeof(chunk_t*) * render_block_count);
+    //for (int x = 0; x < render_block_count; x++) {
+    //    base_chunks[x] = (chunk_t*)malloc(sizeof(chunk_t) * render_block_count);
+    //    for (int z = 0; z < render_block_count; z++) {
+    //        init_chunk(&base_chunks[x][z], (vec2_t){x, z});
+    //    }
+    //}
+
+    world_octree_node_t* wofn = world_octree_get_final_node(0, (vec3_t){0, 0, 0});
 
     glUseProgram(rc_defaults.shader_id);
 
-    rcs = (render_chunk_t**)malloc(sizeof(render_chunk_t*) * render_block_count);
-    for (int x = 0; x < render_block_count; x++) {
-        rcs[x] = (render_chunk_t*)malloc(sizeof(render_chunk_t) * render_block_count);
-        for (int z = 0; z < render_block_count; z++) {
-            update_render_chunk(&base_chunks[x][z], &rcs[x][z]);
-        }
+    int rccount = 8;
+    rcs = (render_chunk_t*)malloc(sizeof(render_chunk_t) * rccount);
+    for (int i = 0; i < rccount; i++) {
+        chunk_t* chunk = wofn->world_octree_ptr.chunks[i];
+        update_render_chunk(chunk, &rcs[i]);
     }
 
     texture_t* texture = load_texture("textures/32x32.tga");
@@ -129,6 +130,34 @@ void render_chunk(chunk_t* chunk) {
     glUseProgram(rc_defaults.shader_id);
     mat4_t camera_mat = mat4_mul(camera.view, camera.proj);
 
+    for (int i = 0; i < 8; i++) {
+        const vec3_t octree_offsets[8] = {
+            {0, 0, 0},
+            {1, 0, 0},
+            {0, 1, 0},
+            {1, 1, 0},
+            {0, 0, 1},
+            {1, 0, 1},
+            {0, 1, 1},
+            {1, 1, 1}
+        };
+
+        vec3_t offset = octree_offsets[i];
+        transform_t chunk_transform = {
+            .position = {offset.x * CHUNK_SIZE, offset.y * CHUNK_SIZE, offset.z * CHUNK_SIZE},
+            .rotation = {0.0f, 0.0f, 0.0f},
+            .scale = {1.0f, 1.0f, 1.0f}
+        };
+
+        glBindVertexArray(rcs[i].vao);
+        glBindTexture(GL_TEXTURE_2D, rc_defaults.texture_id);
+
+        mat4_t mvp = mat4_mul(mat4_model(&chunk_transform), camera_mat);
+        glUniformMatrix4fv(rc_defaults.mvp_matrix_loc, 1, GL_FALSE, (float*)mvp.m);
+        glDrawElements(GL_TRIANGLES, rcs[i].indices, GL_UNSIGNED_INT, 0);
+    }
+
+    /*
     for (int x = 0; x < render_block_count; x++) {
         for (int z = 0; z < render_block_count; z++) {
             // TODO: No need for chunk rotation / scale, theyre always the same
@@ -146,6 +175,7 @@ void render_chunk(chunk_t* chunk) {
             glDrawElements(GL_TRIANGLES, rcs[x][z].indices, GL_UNSIGNED_INT, 0);
         }
     }
-    
+    */
+
     glUseProgram(0);
 }

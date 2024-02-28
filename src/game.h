@@ -6,11 +6,7 @@
 #include "rendering/render.h"
 #include "player.h"
 
-#include "world/chunk.h"
-
-typedef struct {
-    chunk_t* chunk;
-} game_world_t;
+#include "world/world.h"
 
 void game_init();
 void game_loop();

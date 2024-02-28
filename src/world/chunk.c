@@ -1,7 +1,5 @@
 #include "chunk.h"
 
-static int chunk_index = 0;
-
 void init_chunk(chunk_t* chunk, vec2_t pos) {
     //chunk = (chunk_t*)malloc(sizeof(chunk_t));
     chunk->blocks = (uint16_t*)malloc(CHUNK_TOTAL_BLOCK_COUNT * sizeof(uint16_t));
@@ -22,8 +20,6 @@ void init_chunk(chunk_t* chunk, vec2_t pos) {
             }
         }
     }
-
-    chunk_index++;
 }
 
 int has_block(chunk_t* chunk, vec3_t pos) {

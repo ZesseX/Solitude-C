@@ -19,6 +19,7 @@
 #include "shader.h"
 #include "../input/input.h"
 
+#include "../world/world.h"
 #include "../world/chunk.h"
 #include "render_chunk.h"
 #include "render_debug.h"

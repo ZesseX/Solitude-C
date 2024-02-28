@@ -1,11 +1,8 @@
 #include "game.h"
 
-game_world_t game_world;
-
 void game_init() {
-    player_t player;
+    world_octrees_init_empty();
 
-    //init_chunk(game_world.chunk);
     renderer_init();
 }
 
