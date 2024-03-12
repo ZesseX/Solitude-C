@@ -10,7 +10,7 @@ camera_t camera;
 
 float last_frame_time = 0;
 
-int renderer_init(){
+int renderer_init(render_context_t* render_context){
     if (!glfwInit()) {
         printf("Failed to initialize glfw\n");
         return 0;
@@ -45,12 +45,12 @@ int renderer_init(){
 
     last_frame_time = glfwGetTime();
 
-    render_init_temp_chunk();
+    render_init_render_chunks(render_context);
     
     return 1;
 }
 
-int renderer_update() {
+int renderer_update(render_context_t* render_context) {
     render_update_start();
     render_chunk(NULL);
     render_update_end();
@@ -69,7 +69,7 @@ typedef struct {
 
 render_chunk_defaults_t rc_defaults;
 
-void render_init_temp_chunk() {
+void render_init_render_chunks(render_context_t* render_context) {
     int scs;
     rc_defaults.shader_id = shader_load("shader/vert.vert", "shader/frag.frag", &scs);
     if(!scs){
@@ -105,17 +105,25 @@ void render_init_temp_chunk() {
     camera.transform.position = (vec3_t){0.0f, 32.0f, 0.0f};
 }
 
+double interval = 0.1;
+double interval_cur = 0.0;
+int fps = 0;
 void render_update_start() {
-    float cur_frame_time = glfwGetTime();
-    float deltatime = cur_frame_time - last_frame_time;
-    last_frame_time = cur_frame_time;
-
-    float aspect_ratio = (float)WINDOW_WIDTH / (float)WINDOW_WIDTH;
-
     vec2_t move_inputs = input_get_movement(window);
     vec2_t rotation_inputs = input_get_rotation(window);
 
-    camera_update_transform_freecam(&camera, deltatime, move_inputs, rotation_inputs);
+    if (interval_cur <= 0.0) {
+        fps = (int)(1.0 / get_deltatime());
+        interval_cur = interval;
+    }
+    else {
+        interval_cur -= get_deltatime();
+    }
+
+    char* fps_text = (char*)malloc(sizeof(char) * 50);
+    snprintf(fps_text, 50, "%d", fps);
+    glfwSetWindowTitle(window, fps_text);
+    camera_update_transform_freecam(&camera, get_deltatime(), move_inputs, rotation_inputs);
 
     glClearColor(0.1, 0.3f, 0.6f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -156,26 +164,6 @@ void render_chunk(chunk_t* chunk) {
         glUniformMatrix4fv(rc_defaults.mvp_matrix_loc, 1, GL_FALSE, (float*)mvp.m);
         glDrawElements(GL_TRIANGLES, rcs[i].indices, GL_UNSIGNED_INT, 0);
     }
-
-    /*
-    for (int x = 0; x < render_block_count; x++) {
-        for (int z = 0; z < render_block_count; z++) {
-            // TODO: No need for chunk rotation / scale, theyre always the same
-            transform_t chunk_transform = {
-                .position = {x * CHUNK_SIZE, 0.0f, z * CHUNK_SIZE},
-                .rotation = {0.0f, 0.0f, 0.0f},
-                .scale = {1.0f, 1.0f, 1.0f}
-            };
-
-            glBindVertexArray(rcs[x][z].vao);
-            glBindTexture(GL_TEXTURE_2D, rc_defaults.texture_id);
-
-            mat4_t mvp = mat4_mul(mat4_model(&chunk_transform), camera_mat);
-            glUniformMatrix4fv(rc_defaults.mvp_matrix_loc, 1, GL_FALSE, (float*)mvp.m);
-            glDrawElements(GL_TRIANGLES, rcs[x][z].indices, GL_UNSIGNED_INT, 0);
-        }
-    }
-    */
 
     glUseProgram(0);
 }

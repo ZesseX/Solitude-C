@@ -75,10 +75,6 @@ world_octree_node_t* world_octree_get_final_node(int face, vec3_t pos) {
         half_width /= 2;
     }
 
-    printf("%p\n", (void*)current_node->world_octree_ptr.chunks[0]);
-    printf("%p\n", (void*)current_node->world_octree_ptr.chunks[1]);
-    printf("%p\n", (void*)current_node->world_octree_ptr.chunks[2]);
-
     return current_node;
 }
 
@@ -99,8 +95,25 @@ void world_octree_generate_final_node(world_octree_node_t* node, int face, vec3_
     for (int i = 0; i < 8; i++) {
         chunks[i] = (chunk_t*)malloc(sizeof(chunk_t));
         real_pos = vec3_add(pos, octree_offsets[i]);
-        init_chunk(chunks[i], (vec2_t){real_pos.x, real_pos.z});
-
-        vec3_print(real_pos);
+        init_chunk(chunks[i], real_pos);
     }
+}
+
+void world_octree_get_chunks(chunk_t** chunks, int range, vec3_t origin) {
+    int chunk_count = (range * 2 + 1); // range * 2 + 1 to get the size in one axis
+    chunk_count *= chunk_count; // multiply by itself to get count of chunks in all axis
+
+    chunks = (chunk_t**)malloc(sizeof(chunk_t*) * chunk_count);
+    vec3_t pos;
+    for (int i = 0; i < chunk_count; i++) {
+        pos = chunk_index_to_vec3(i);
+
+
+    }
+
+
+}
+
+int world_octree_get_face(vec3_t coords) {
+    
 }

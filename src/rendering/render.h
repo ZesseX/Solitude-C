@@ -12,38 +12,32 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "../math/matrix.h"
-#include "../transform.h"
+#include "render_chunk.h"
+#include "render_debug.h"
 #include "camera.h"
 #include "texture.h"
 #include "shader.h"
+#include "../math/matrix.h"
+#include "../physics/deltatime.h"
+#include "../transform.h"
 #include "../input/input.h"
-
 #include "../world/world.h"
 #include "../world/chunk.h"
-#include "render_chunk.h"
-#include "render_debug.h"
 
 typedef struct {
-    GLuint vbo;
-    GLuint vao;
-    GLuint ebo;
+    render_chunk_context_t render_chunk_context;
+    render_chunk_t* render_chunks;
+    int render_chunk_count;
 
-    GLuint shader_id;
-
-    GLuint texture_id;
-
-    GLuint texture_loc;
-    GLuint mvp_matrix_loc;
 } render_context_t;
 
-int renderer_init();
-int renderer_update();
+int renderer_init(render_context_t* render_context);
+int renderer_update(render_context_t* render_context);
 
 void render_update_start();
 void render_update_end();
 
-void render_init_temp_chunk();
+void render_init_render_chunks(render_context_t* render_context);
 void render_chunk(chunk_t* chunk);
 
 #endif

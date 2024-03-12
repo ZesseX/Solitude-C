@@ -1,6 +1,7 @@
 #ifndef CHUNK_H
 #define CHUNK_H
 
+#include "world_defines.h"
 #include <stdlib.h>
 #include <GLFW/glfw3.h>
 #include "../math/vec3.h"
@@ -16,8 +17,11 @@ typedef struct {
     // TODO: Add extra stuff for blocks actively being affected by gravity
 } chunk_t;
 
-void init_chunk(chunk_t* chunk, vec2_t pos);
+void init_chunk(chunk_t* chunk, vec3_t pos);
 
 int has_block(chunk_t* chunk, vec3_t pos);
+
+int chunk_vec3_to_index(vec3_t pos);
+vec3_t chunk_index_to_vec3(int index);
 
 #endif

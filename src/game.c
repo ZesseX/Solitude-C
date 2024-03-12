@@ -1,16 +1,17 @@
 #include "game.h"
 
+render_context_t render_context;
+
 void game_init() {
     world_octrees_init_empty();
 
-    renderer_init();
-}
+    renderer_init(&render_context);
 
-void game_loop(){
+    update_deltatime();
     int should_close = 0;
-
     while(!should_close){
-        should_close = renderer_update();
+        update_deltatime();
+        should_close = renderer_update(&render_context);
     }
 }
 

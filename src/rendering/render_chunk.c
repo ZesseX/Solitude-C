@@ -1,6 +1,8 @@
 #include "render_chunk.h"
 
 int update_render_chunk(chunk_t* chunk, render_chunk_t* rc) {
+    rc->chunk = chunk;
+
     GLfloat* verts = (GLfloat*)malloc(CHUNK_TOTAL_BLOCK_COUNT * ((3 + 2) * 4 * 6) * sizeof(GLfloat));
     int verts_count = 0;
 
@@ -11,11 +13,11 @@ int update_render_chunk(chunk_t* chunk, render_chunk_t* rc) {
     for (int y = 0; y < CHUNK_SIZE; y++) {
         for (int x = 0; x < CHUNK_SIZE; x++) {
             for (int z = 0; z < CHUNK_SIZE; z++) {
-                if(chunk->blocks[y * CHUNK_SIZE_SQUARED + x * CHUNK_SIZE + z] == 0) {
+                if(rc->chunk->blocks[y * CHUNK_SIZE_SQUARED + x * CHUNK_SIZE + z] == 0) {
                     continue;
                 }
 
-                get_block_visible_faces(chunk, (vec3_t){x, y, z}, visible_faces);
+                get_block_visible_faces(rc->chunk, (vec3_t){x, y, z}, visible_faces);
                 for (int i = 0; i < 6; i++){
                     if(!visible_faces[i]) continue;
 
