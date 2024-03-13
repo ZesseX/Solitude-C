@@ -2,6 +2,6 @@
 #define WORLD_DEFINES_H
 
 // Max height of perlin noise overlayed on top of the heightmap. (0 - this)
-#define WORLD_MAX_PERLIN_HEIGHT 128
+#define WORLD_MAX_PERLIN_HEIGHT 76
 
 #endif

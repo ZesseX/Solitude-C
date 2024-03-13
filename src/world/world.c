@@ -62,9 +62,6 @@ world_octree_node_t* world_octree_get_final_node(int face, vec3_t pos) {
 
             if (i == WORLD_OCTREE_DEPTH - 1){
                 world_octree_generate_final_node(temp_node, face, (vec3_t){start_x, start_y, start_z});
-                printf("%p\n", (void*)temp_node->world_octree_ptr.chunks[0]);
-                printf("%p\n", (void*)temp_node->world_octree_ptr.chunks[1]);
-                printf("%p\n", (void*)temp_node->world_octree_ptr.chunks[2]);
                 current_node = temp_node;
                 break;
             }
@@ -99,19 +96,27 @@ void world_octree_generate_final_node(world_octree_node_t* node, int face, vec3_
     }
 }
 
-void world_octree_get_chunks(chunk_t** chunks, int range, vec3_t origin) {
-    int chunk_count = (range * 2 + 1); // range * 2 + 1 to get the size in one axis
-    chunk_count *= chunk_count; // multiply by itself to get count of chunks in all axis
+void world_octree_get_chunks(chunk_t*** chunks, int range, vec3_t origin) {
+    int single_axis = (range * 2 + 1); // range * 2 + 1 to get the size in one axis
+    int chunk_count = single_axis * single_axis; // multiply by itself to get count of chunks in all axis
 
-    chunks = (chunk_t**)malloc(sizeof(chunk_t*) * chunk_count);
+    (*chunks) = (chunk_t**)malloc(sizeof(chunk_t*) * chunk_count * 8); // multiply by 8 because octree has 8 chunks in the final node
     vec3_t pos;
-    for (int i = 0; i < chunk_count; i++) {
-        pos = chunk_index_to_vec3(i);
+    vec3_t start_pos = vec3_sub(origin, (vec3_t){range, range , range});
+    int chunk_index = 0;
+    for (int y = 0; y < single_axis; y++) {
+        for (int x = 0; x < single_axis; x++) {
+            for (int z = 0; z < single_axis; z++) {
+                pos = vec3_add(start_pos, (vec3_t){x, y, z});
 
-
+                world_octree_node_t* node = world_octree_get_final_node(0, pos);
+                for (int i = 0; i < 8; i++) {
+                    (*chunks)[chunk_index + i] = node->world_octree_ptr.chunks[i];
+                }
+                chunk_index += 8;
+            }
+        }
     }
-
-
 }
 
 int world_octree_get_face(vec3_t coords) {

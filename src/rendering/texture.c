@@ -16,7 +16,7 @@ texture_t* load_texture(const char* path) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->tga->width, texture->tga->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->tga->data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->tga->width, texture->tga->height, 0, GL_BGRA, GL_UNSIGNED_BYTE, texture->tga->data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
     glBindTexture(GL_TEXTURE_2D, 0);
