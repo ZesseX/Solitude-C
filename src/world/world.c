@@ -54,14 +54,18 @@ world_octree_node_t* world_octree_get_final_node(int face, vec3_t pos) {
         start_x = (index & (1 << 0)) ? start_x + half_width : start_x;
         start_y = (index & (1 << 1)) ? start_y + half_width : start_y;
         start_z = (index & (1 << 2)) ? start_z + half_width : start_z;
-
+        printf("%d\n", half_width);
         temp_node = current_node->world_octree_ptr.children[index];
         if (temp_node == NULL) {
             world_octree_init_node(&temp_node);
             temp_node->parent = current_node;
 
             if (i == WORLD_OCTREE_DEPTH - 1){
-                world_octree_generate_final_node(temp_node, face, (vec3_t){start_x, start_y, start_z});
+                printf("XX\n");
+                vec3_print((vec3_t){start_x, start_y, start_z});
+                vec3_print(pos);
+                printf("YY\n");
+                world_octree_generate_final_node(temp_node, face, pos);
                 current_node = temp_node;
                 break;
             }

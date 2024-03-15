@@ -8,6 +8,10 @@ vec3_t vec3_sub(vec3_t a, vec3_t b) {
     return (vec3_t){a.x - b.x, a.y - b.y, a.z - b.z};
 }
 
+vec3_t vec3_mulf(vec3_t v, float f) {
+    return (vec3_t){v.x * f, v.y * f, v.z * f};
+}
+
 float vec3_magnitude(vec3_t* v) {
     return sqrtf(v->x * v->x + v->y * v->y + v->z * v->z);
 }

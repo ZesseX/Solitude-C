@@ -13,6 +13,7 @@ typedef struct {
 
 vec3_t vec3_add(vec3_t a, vec3_t b);
 vec3_t vec3_sub(vec3_t a, vec3_t b);
+vec3_t vec3_mulf(vec3_t v, float f);
 
 float vec3_magnitude(vec3_t* v);
 

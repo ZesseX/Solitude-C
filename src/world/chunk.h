@@ -13,6 +13,7 @@
 
 typedef struct {
     uint16_t* blocks;
+    vec3_t position;
 
     // TODO: Add extra stuff for blocks actively being affected by gravity
 } chunk_t;

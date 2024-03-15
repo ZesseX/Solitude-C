@@ -1,6 +1,8 @@
 #include "chunk.h"
 
 void init_chunk(chunk_t* chunk, vec3_t pos) {
+    chunk->position = pos;
+    vec3_print(pos);
     chunk->blocks = (uint16_t*)malloc(CHUNK_TOTAL_BLOCK_COUNT * sizeof(uint16_t));
 
     int max_heights[CHUNK_SIZE][CHUNK_SIZE];

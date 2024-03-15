@@ -6,7 +6,7 @@
 
 /*
 * World consists of 6 planes, each of those six planes is an octree (depth 9 with 38m chunk size per axis)
-* 38*(4^9) => 9 961 472m (9961km)
+* 38 * ??? => 9 961 472m (9961km)
 * world circumference 39 845km
 */
 
@@ -14,7 +14,7 @@
 // Mariana Trench depth + Mount Everest = ~20km
 
 #define WORLD_OCTREE_FACE_COUNT 6
-#define WORLD_OCTREE_DEPTH 9
+#define WORLD_OCTREE_DEPTH 17
 #define WORLD_OCTREE_SIZE_PER_AXIS 262144
 
 typedef struct world_octree_node_t world_octree_node_t;

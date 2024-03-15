@@ -139,6 +139,38 @@ void render_chunk(chunk_t* chunk) {
     glUseProgram(rc_defaults.shader_id);
     mat4_t camera_mat = mat4_mul(camera.view, camera.proj);
 
+    const vec3_t octree_offsets[8] = {
+        {0, 0, 0},
+        {1, 0, 0},
+        {0, 1, 0},
+        {1, 1, 0},
+        {0, 0, 1},
+        {1, 0, 1},
+        {0, 1, 1},
+        {1, 1, 1}
+    };
+    for (int i = 0; i < 3 * 3 * 3; i++) {
+        for (int j = 0; j < 8; j++) {
+            vec3_t offset = octree_offsets[j];
+            offset = vec3_mulf(offset, CHUNK_SIZE);
+            vec3_t pos = vec3_add(vec3_mulf(rcs[i * 8 + j].chunk->position, CHUNK_SIZE), offset);
+
+            transform_t chunk_transform = {
+                .position = pos,
+                .rotation = {0.0f, 0.0f, 0.0f},
+                .scale = {1.0f, 1.0f, 1.0f}
+            };
+
+            glBindVertexArray(rcs[i * 8 + j].vao);
+            glBindTexture(GL_TEXTURE_2D, rc_defaults.texture_id);
+
+            mat4_t mvp = mat4_mul(mat4_model(&chunk_transform), camera_mat);
+            glUniformMatrix4fv(rc_defaults.mvp_matrix_loc, 1, GL_FALSE, (float*)mvp.m);
+            glDrawElements(GL_TRIANGLES, rcs[i * 8 + j].indices, GL_UNSIGNED_INT, 0);
+        }
+    }
+
+    /*
     for (int y = 0; y < 3; y++) {
         for (int x = 0; x < 3; x++) {
             for(int z = 0; z < 3; z++) {
@@ -155,11 +187,13 @@ void render_chunk(chunk_t* chunk) {
                     };
     
                     vec3_t offset = octree_offsets[i];
-                    int real_index = ((y * CHUNK_SIZE_SQUARED + x * CHUNK_SIZE + z) * 8) + i;
+                    int real_index = ((y * 9 + x * 3 + z) * 8) + i;
+
+                    offset = vec3_mulf(offset, CHUNK_SIZE);
+                    vec3_t pos = vec3_add(vec3_mulf(rcs[real_index].chunk->position, CHUNK_SIZE), offset);
+
                     transform_t chunk_transform = {
-                        .position = {(offset.x * CHUNK_SIZE) + x * 2 * CHUNK_SIZE, 
-                                    (offset.y * CHUNK_SIZE) + y * 2 * CHUNK_SIZE, 
-                                    (offset.z * CHUNK_SIZE) + z * 2 * CHUNK_SIZE},
+                        .position = pos,
                         .rotation = {0.0f, 0.0f, 0.0f},
                         .scale = {1.0f, 1.0f, 1.0f}
                     };
@@ -174,6 +208,7 @@ void render_chunk(chunk_t* chunk) {
             }
         }
     }
+    */
 
     glUseProgram(0);
 }
