@@ -54,17 +54,17 @@ world_octree_node_t* world_octree_get_final_node(int face, vec3_t pos) {
         start_x = (index & (1 << 0)) ? start_x + half_width : start_x;
         start_y = (index & (1 << 1)) ? start_y + half_width : start_y;
         start_z = (index & (1 << 2)) ? start_z + half_width : start_z;
-        printf("%d\n", half_width);
+        //printf("%d\n", half_width);
         temp_node = current_node->world_octree_ptr.children[index];
         if (temp_node == NULL) {
             world_octree_init_node(&temp_node);
             temp_node->parent = current_node;
 
             if (i == WORLD_OCTREE_DEPTH - 1){
-                printf("XX\n");
-                vec3_print((vec3_t){start_x, start_y, start_z});
-                vec3_print(pos);
-                printf("YY\n");
+                //printf("XX\n");
+                //vec3_print((vec3_t){start_x, start_y, start_z});
+                //vec3_print(pos);
+                //printf("YY\n");
                 world_octree_generate_final_node(temp_node, face, pos);
                 current_node = temp_node;
                 break;
@@ -90,7 +90,6 @@ void world_octree_init_node(world_octree_node_t** node) {
 void world_octree_generate_final_node(world_octree_node_t* node, int face, vec3_t pos) {
     // TODO: Generate chunks based on position given
     chunk_t** chunks = (chunk_t**)malloc(sizeof(chunk_t*) * 8);
-    node->world_octree_ptr.chunks = chunks;
 
     vec3_t real_pos = pos;
     for (int i = 0; i < 8; i++) {
@@ -98,11 +97,13 @@ void world_octree_generate_final_node(world_octree_node_t* node, int face, vec3_
         real_pos = vec3_add(pos, octree_offsets[i]);
         init_chunk(chunks[i], real_pos);
     }
+
+    node->world_octree_ptr.chunks = chunks;
 }
 
 void world_octree_get_chunks(chunk_t*** chunks, int range, vec3_t origin) {
     int single_axis = (range * 2 + 1); // range * 2 + 1 to get the size in one axis
-    int chunk_count = single_axis * single_axis; // multiply by itself to get count of chunks in all axis
+    int chunk_count = single_axis * single_axis * single_axis; // multiply by itself to get count of chunks in all axis
 
     (*chunks) = (chunk_t**)malloc(sizeof(chunk_t*) * chunk_count * 8); // multiply by 8 because octree has 8 chunks in the final node
     vec3_t pos;
