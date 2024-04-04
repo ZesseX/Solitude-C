@@ -17,6 +17,9 @@
 #define WORLD_OCTREE_DEPTH 17
 #define WORLD_OCTREE_SIZE_PER_AXIS 262144
 
+#define DEMO_WORLD_RANGE 3
+#define DEMO_WORLD_RANGE_PER_AXIS (DEMO_WORLD_RANGE * 2 + 1)
+
 typedef struct world_octree_node_t world_octree_node_t;
 struct world_octree_node_t{
     world_octree_node_t* parent;

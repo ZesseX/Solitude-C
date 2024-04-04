@@ -3,6 +3,7 @@
 
 #include "../math/matrix.h"
 #include "../transform.h"
+#include "../math/vec3.h"
 #include "../math/vec2.h"
 #include "../math/math_utils.h"
 
@@ -10,8 +11,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#define CAMERA_ROTATE_SPEED 5
-#define CAMERA_MOVEMENT_SPEED 20
+#define CAMERA_ROTATE_SPEED 8
+#define CAMERA_MOVEMENT_SPEED 50
 #define CAMERA_FOV 70
 
 typedef struct {
@@ -24,6 +25,6 @@ typedef struct {
 void camera_update_view_matrix(camera_t* camera);
 void camera_update_proj_matrix(camera_t* camera, float aspect_ratio);
 
-void camera_update_transform_freecam(camera_t* camera, float dt, vec2_t move_inputs, vec2_t rotate_inputs);
+void camera_update_transform_freecam(camera_t* camera, float dt, vec3_t move_inputs, vec2_t rotate_inputs);
 
 #endif

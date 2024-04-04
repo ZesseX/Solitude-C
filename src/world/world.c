@@ -91,12 +91,15 @@ void world_octree_generate_final_node(world_octree_node_t* node, int face, vec3_
     // TODO: Generate chunks based on position given
     chunk_t** chunks = (chunk_t**)malloc(sizeof(chunk_t*) * 8);
 
-    vec3_t real_pos = pos;
+    // multiply with 2 because 8 chunks means octree node is 2x chunksize per axis
+    vec3_t real_pos = vec3_mulf(pos, 2.0f);
     for (int i = 0; i < 8; i++) {
         chunks[i] = (chunk_t*)malloc(sizeof(chunk_t));
-        real_pos = vec3_add(pos, octree_offsets[i]);
-        init_chunk(chunks[i], real_pos);
+        
+        vec3_t real_pos2 = vec3_add(real_pos, octree_offsets[i]);
+        init_chunk(chunks[i], real_pos2);
     }
+    printf("new octree\n");
 
     node->world_octree_ptr.chunks = chunks;
 }
@@ -112,13 +115,16 @@ void world_octree_get_chunks(chunk_t*** chunks, int range, vec3_t origin) {
     for (int y = 0; y < single_axis; y++) {
         for (int x = 0; x < single_axis; x++) {
             for (int z = 0; z < single_axis; z++) {
-                pos = vec3_add(start_pos, (vec3_t){x, y, z});
+                pos = vec3_add(start_pos, (vec3_t){x * 1.0f, y * 1.0f, z * 1.0f});
+
+                vec3_print(pos);
+                printf("x\n");
 
                 world_octree_node_t* node = world_octree_get_final_node(0, pos);
                 for (int i = 0; i < 8; i++) {
-                    (*chunks)[chunk_index + i] = node->world_octree_ptr.chunks[i];
+                    (*chunks)[chunk_index++] = node->world_octree_ptr.chunks[i];
                 }
-                chunk_index += 8;
+                //chunk_index += 8;
             }
         }
     }

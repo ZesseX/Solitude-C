@@ -1,7 +1,7 @@
 #include "chunk.h"
 
 void init_chunk(chunk_t* chunk, vec3_t pos) {
-    chunk->position = pos;
+    chunk->position = vec3_mulf(pos, CHUNK_SIZE);
     vec3_print(pos);
     chunk->blocks = (uint16_t*)malloc(CHUNK_TOTAL_BLOCK_COUNT * sizeof(uint16_t));
 
@@ -9,8 +9,8 @@ void init_chunk(chunk_t* chunk, vec3_t pos) {
     for (int x = 0; x < CHUNK_SIZE; x++) {
         for (int z = 0; z < CHUNK_SIZE; z++) {
             // TODO: Include world heightmap in this
-            int height = WORLD_MAX_PERLIN_HEIGHT * perlin_noise(x + (pos.x * CHUNK_SIZE), z + (pos.z * CHUNK_SIZE), 0.2f, 2);
-            max_heights[x][z] = height - pos.y * CHUNK_SIZE;
+            int height = WORLD_MAX_PERLIN_HEIGHT * perlin_noise(x + chunk->position.x, z + chunk->position.z, 0.2f, 2);
+            max_heights[x][z] = height - chunk->position.y;
         }
     }
 

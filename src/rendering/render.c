@@ -86,28 +86,26 @@ void render_init_render_chunks(render_context_t* render_context) {
 
     //world_octree_node_t* wofn = world_octree_get_final_node(0, (vec3_t){0, 0, 0});
     chunk_t** chunks;
-    world_octree_get_chunks(&chunks, 1, (vec3_t){5, 1, 5});
+    world_octree_get_chunks(&chunks, DEMO_WORLD_RANGE, (vec3_t){DEMO_WORLD_RANGE, DEMO_WORLD_RANGE, DEMO_WORLD_RANGE});
 
     glUseProgram(rc_defaults.shader_id);
 
-    int rccount = 3 * 3 * 3 * 8;
+    int rccount = DEMO_WORLD_RANGE_PER_AXIS * DEMO_WORLD_RANGE_PER_AXIS * DEMO_WORLD_RANGE_PER_AXIS * 8;
     rcs = (render_chunk_t*)malloc(sizeof(render_chunk_t) * rccount);
     //for (int i = 0; i < rccount; i++) {
     //    update_render_chunk(chunks[i], &rcs[i]);
     //}
 
-    for (int y = 0; y < 3; y++) {
-        for (int x = 0; x < 3; x++) {
-            for (int z = 0; z < 3; z++) {
-                int index = (y * 3 * 3) + (x * 3) + z;
+    for (int y = 0; y < DEMO_WORLD_RANGE_PER_AXIS; y++) {
+        for (int x = 0; x < DEMO_WORLD_RANGE_PER_AXIS; x++) {
+            for (int z = 0; z < DEMO_WORLD_RANGE_PER_AXIS; z++) {
+                int index = (y * DEMO_WORLD_RANGE_PER_AXIS * DEMO_WORLD_RANGE_PER_AXIS) + (x * DEMO_WORLD_RANGE_PER_AXIS) + z;
                 index *= 8;
                 for (int i = 0; i < 8; i++) {
                     
                     update_render_chunk(chunks[index], &rcs[index]);
                     index++;
                 }
-
-                
             }
         }
     }
@@ -126,7 +124,7 @@ double interval = 0.1;
 double interval_cur = 0.0;
 int fps = 0;
 void render_update_start() {
-    vec2_t move_inputs = input_get_movement(window);
+    vec3_t move_inputs = input_get_movement(window);
     vec2_t rotation_inputs = input_get_rotation(window);
 
     if (interval_cur <= 0.0) {
@@ -166,26 +164,25 @@ void render_chunk(chunk_t* chunk) {
         {1, 1, 1}
     };
 
-    for (int y = 0; y < 3; y++) {
-        for (int x = 0; x < 3; x++) {
-            for (int z = 0; z < 3; z++) {
-                vec3_t pos;
-                pos.x = x * CHUNK_SIZE;
-                pos.y = y * CHUNK_SIZE;
-                pos.z = z * CHUNK_SIZE;
-
+    for (int y = 0; y < DEMO_WORLD_RANGE_PER_AXIS; y++) {
+        for (int x = 0; x < DEMO_WORLD_RANGE_PER_AXIS; x++) {
+            for (int z = 0; z < DEMO_WORLD_RANGE_PER_AXIS; z++) {
+                
                 for (int i = 0; i < 8; i++) {
+                    int index = (y * DEMO_WORLD_RANGE_PER_AXIS * DEMO_WORLD_RANGE_PER_AXIS) + (x * DEMO_WORLD_RANGE_PER_AXIS) + z;
+                    vec3_t pos = rcs[index * 8 + i].chunk->position;
+
                     vec3_t offset = octree_offsets[i];
                     offset = vec3_mulf(offset, CHUNK_SIZE);
 
-                    vec3_t real_pos = vec3_add(vec3_mulf(pos, 2.0f), offset);
+                    //vec3_t real_pos = vec3_add(vec3_mulf(pos, 2.0f), offset);
+                    vec3_t real_pos = pos; // vec3_mulf(pos, CHUNK_SIZE);
+                    //real_pos = vec3_add(real_pos, offset);
                     transform_t chunk_transform = {
                         .position = real_pos,
                         .rotation = {0.0f, 0.0f, 0.0f},
                         .scale = {1.0f, 1.0f, 1.0f}
                     };
-
-                    int index = (y * 9) + (x * 3) + z;
 
                     glBindVertexArray(rcs[index * 8 + i].vao);
                     glBindTexture(GL_TEXTURE_2D, rc_defaults.texture_id);

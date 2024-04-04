@@ -12,7 +12,7 @@ void camera_update_proj_matrix(camera_t* camera, float aspect_ratio) {
     camera->proj = mat4_perspective(CAMERA_FOV, aspect_ratio, 0.1f, 1024.0f);
 }
 
-void camera_update_transform_freecam(camera_t* camera, float dt, vec2_t move_inputs, vec2_t rotate_inputs) {
+void camera_update_transform_freecam(camera_t* camera, float dt, vec3_t move_inputs, vec2_t rotate_inputs) {
     camera->transform.rotation.y += rotate_inputs.x * CAMERA_ROTATE_SPEED * dt;
     camera->transform.rotation.x -= rotate_inputs.y * CAMERA_ROTATE_SPEED * dt;
 
@@ -30,8 +30,9 @@ void camera_update_transform_freecam(camera_t* camera, float dt, vec2_t move_inp
         camera->transform.rotation.x = -PI_HALF;
     }
 
-    vec3_t move_dir = {move_inputs.x, 0, -move_inputs.y};
+    vec3_t move_dir = {move_inputs.x, 0, -move_inputs.z};
     vec3_normalize(&move_dir);
+    move_dir.y = move_inputs.y;
 
     mat4_t rotation = mat4_rotate(0, camera->transform.rotation.y, 0);
     vec3_t rotated_move_dir = mat4_mul_vec3(&rotation, move_dir);
