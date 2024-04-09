@@ -7,12 +7,11 @@
 #include "../math/vec2.h"
 #include "../math/math_utils.h"
 
-//#include "../glad/glad.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#define CAMERA_ROTATE_SPEED 8
-#define CAMERA_MOVEMENT_SPEED 50
+#define CAMERA_ROTATE_SPEED 12
+#define CAMERA_MOVEMENT_SPEED 100
 #define CAMERA_FOV 70
 
 typedef struct {

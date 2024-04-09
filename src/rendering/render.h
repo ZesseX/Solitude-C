@@ -28,7 +28,6 @@ typedef struct {
     render_chunk_context_t render_chunk_context;
     render_chunk_t* render_chunks;
     int render_chunk_count;
-
 } render_context_t;
 
 int renderer_init(render_context_t* render_context);
@@ -38,6 +37,6 @@ void render_update_start();
 void render_update_end();
 
 void render_init_render_chunks(render_context_t* render_context);
-void render_chunk(chunk_t* chunk);
+void render_chunk(render_context_t* rc);
 
 #endif

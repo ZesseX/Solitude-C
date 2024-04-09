@@ -7,9 +7,16 @@
 #include "../world/world.h"
 #include "../world/chunk.h"
 
+#define TEXTURE_ARRAY_LENGTH 2
+#define TEXTURE_SWAP_INTERVAL 1.0
+
 typedef struct {
     GLuint shader_id;
-    GLuint texture_id; // TODO: Add array of texture_ids for block animations
+    //GLuint texture_id; // TODO: Add array of texture_ids for block animations
+
+    GLuint* texture_ids;
+    int texture_index;
+    float texture_swap_interval;
 
     GLuint texture_loc;
     GLuint mvp_matrix_loc;

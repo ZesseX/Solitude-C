@@ -29,7 +29,7 @@ int renderer_init(render_context_t* render_context){
     }
 
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(1);
+    glfwSwapInterval(0);
 
     if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         printf("Failed to initialize glad\n");
@@ -52,43 +52,25 @@ int renderer_init(render_context_t* render_context){
 
 int renderer_update(render_context_t* render_context) {
     render_update_start();
-    render_chunk(NULL);
+    render_chunk(render_context);
     render_update_end();
 
     return glfwWindowShouldClose(window);
 }
 
 render_chunk_t* rcs;
-typedef struct {
-    GLuint shader_id;
-    GLuint texture_id;
 
-    GLuint mvp_matrix_loc;
-    GLuint texture_loc;
-} render_chunk_defaults_t;
-
-render_chunk_defaults_t rc_defaults;
-
-void render_init_render_chunks(render_context_t* render_context) {
+void render_init_render_chunks(render_context_t* rc) {
     int scs;
-    rc_defaults.shader_id = shader_load("shader/vert.vert", "shader/frag.frag", &scs);
+    rc->render_chunk_context.shader_id = shader_load("shader/vert.vert", "shader/frag.frag", &scs);
     if(!scs){
         // TODO: Do something when loading / compiling the shader fails.
     }
 
-    //base_chunks = (chunk_t**)malloc(sizeof(chunk_t*) * render_block_count);
-    //for (int x = 0; x < render_block_count; x++) {
-    //    base_chunks[x] = (chunk_t*)malloc(sizeof(chunk_t) * render_block_count);
-    //    for (int z = 0; z < render_block_count; z++) {
-    //        init_chunk(&base_chunks[x][z], (vec2_t){x, z});
-    //    }
-    //}
-
-    //world_octree_node_t* wofn = world_octree_get_final_node(0, (vec3_t){0, 0, 0});
     chunk_t** chunks;
     world_octree_get_chunks(&chunks, DEMO_WORLD_RANGE, (vec3_t){DEMO_WORLD_RANGE, DEMO_WORLD_RANGE, DEMO_WORLD_RANGE});
 
-    glUseProgram(rc_defaults.shader_id);
+    glUseProgram(rc->render_chunk_context.shader_id);
 
     int rccount = DEMO_WORLD_RANGE_PER_AXIS * DEMO_WORLD_RANGE_PER_AXIS * DEMO_WORLD_RANGE_PER_AXIS * 8;
     rcs = (render_chunk_t*)malloc(sizeof(render_chunk_t) * rccount);
@@ -110,12 +92,19 @@ void render_init_render_chunks(render_context_t* render_context) {
         }
     }
 
-    texture_t* texture = load_texture("textures/32x32.tga");
-    glGenerateMipmap(texture->id);
+    texture_t* texture_0 = load_texture("textures/32x32_0.tga");
+    glGenerateMipmap(texture_0->id);
 
-    rc_defaults.texture_id = texture->id;
-    rc_defaults.mvp_matrix_loc = glGetUniformLocation(rc_defaults.shader_id, "mvp");;
-    rc_defaults.texture_loc = glGetUniformLocation(rc_defaults.shader_id, "texture_sampler");
+    texture_t* texture_1 = load_texture("textures/32x32_1.tga");
+    glGenerateMipmap(texture_1->id);
+
+    rc->render_chunk_context.texture_ids = (GLuint*)malloc(TEXTURE_ARRAY_LENGTH * sizeof(GLuint));
+
+    rc->render_chunk_context.texture_ids[0] = texture_0->id;
+    rc->render_chunk_context.texture_ids[1] = texture_1->id;
+    
+    rc->render_chunk_context.mvp_matrix_loc = glGetUniformLocation(rc->render_chunk_context.shader_id, "mvp");;
+    rc->render_chunk_context.texture_loc = glGetUniformLocation(rc->render_chunk_context.shader_id, "texture_sampler");
 
     camera.transform.position = (vec3_t){0.0f, 32.0f, 0.0f};
 }
@@ -149,8 +138,17 @@ void render_update_end() {
     glfwPollEvents();
 } 
 
-void render_chunk(chunk_t* chunk) {
-    glUseProgram(rc_defaults.shader_id);
+void render_chunk(render_context_t* rc) {
+    rc->render_chunk_context.texture_swap_interval -= interval_cur;
+    if (rc->render_chunk_context.texture_swap_interval <= 0) {
+        rc->render_chunk_context.texture_swap_interval = TEXTURE_SWAP_INTERVAL;
+        rc->render_chunk_context.texture_index++;
+        if (rc->render_chunk_context.texture_index > TEXTURE_ARRAY_LENGTH - 1) {
+            rc->render_chunk_context.texture_index = 0;
+        }
+    }
+
+    glUseProgram(rc->render_chunk_context.shader_id);
     mat4_t camera_mat = mat4_mul(camera.view, camera.proj);
 
     const vec3_t octree_offsets[8] = {
@@ -175,9 +173,7 @@ void render_chunk(chunk_t* chunk) {
                     vec3_t offset = octree_offsets[i];
                     offset = vec3_mulf(offset, CHUNK_SIZE);
 
-                    //vec3_t real_pos = vec3_add(vec3_mulf(pos, 2.0f), offset);
-                    vec3_t real_pos = pos; // vec3_mulf(pos, CHUNK_SIZE);
-                    //real_pos = vec3_add(real_pos, offset);
+                    vec3_t real_pos = pos;
                     transform_t chunk_transform = {
                         .position = real_pos,
                         .rotation = {0.0f, 0.0f, 0.0f},
@@ -185,79 +181,15 @@ void render_chunk(chunk_t* chunk) {
                     };
 
                     glBindVertexArray(rcs[index * 8 + i].vao);
-                    glBindTexture(GL_TEXTURE_2D, rc_defaults.texture_id);
+                    glBindTexture(GL_TEXTURE_2D, rc->render_chunk_context.texture_ids[rc->render_chunk_context.texture_index]);
 
                     mat4_t mvp = mat4_mul(mat4_model(&chunk_transform), camera_mat);
-                    glUniformMatrix4fv(rc_defaults.mvp_matrix_loc, 1, GL_FALSE, (float*)mvp.m);
+                    glUniformMatrix4fv(rc->render_chunk_context.mvp_matrix_loc, 1, GL_FALSE, (float*)mvp.m);
                     glDrawElements(GL_TRIANGLES, rcs[index * 8 + i].indices, GL_UNSIGNED_INT, 0);
                 }
             }
         }
     }
-
-    /*
-    for (int i = 0; i < 3 * 3 * 3; i++) {
-        for (int j = 0; j < 8; j++) {
-            vec3_t offset = octree_offsets[j];
-            offset = vec3_mulf(offset, CHUNK_SIZE);
-            vec3_t pos = vec3_add(vec3_mulf(rcs[i * 8 + j].chunk->position, CHUNK_SIZE), offset);
-
-            transform_t chunk_transform = {
-                .position = pos,
-                .rotation = {0.0f, 0.0f, 0.0f},
-                .scale = {1.0f, 1.0f, 1.0f}
-            };
-
-        
-            glBindVertexArray(rcs[i * 8 + j].vao);
-            glBindTexture(GL_TEXTURE_2D, rc_defaults.texture_id);
-
-            mat4_t mvp = mat4_mul(mat4_model(&chunk_transform), camera_mat);
-            glUniformMatrix4fv(rc_defaults.mvp_matrix_loc, 1, GL_FALSE, (float*)mvp.m);
-            glDrawElements(GL_TRIANGLES, rcs[i * 8 + j].indices, GL_UNSIGNED_INT, 0);
-        }
-    }
-    */
-
-    /*
-    for (int y = 0; y < 3; y++) {
-        for (int x = 0; x < 3; x++) {
-            for(int z = 0; z < 3; z++) {
-                for (int i = 0; i < 8; i++) {
-                    const vec3_t octree_offsets[8] = {
-                        {0, 0, 0},
-                        {1, 0, 0},
-                        {0, 1, 0},
-                        {1, 1, 0},
-                        {0, 0, 1},
-                        {1, 0, 1},
-                        {0, 1, 1},
-                        {1, 1, 1}
-                    };
-    
-                    vec3_t offset = octree_offsets[i];
-                    int real_index = ((y * 9 + x * 3 + z) * 8) + i;
-
-                    offset = vec3_mulf(offset, CHUNK_SIZE);
-                    vec3_t pos = vec3_add(vec3_mulf(rcs[real_index].chunk->position, CHUNK_SIZE), offset);
-
-                    transform_t chunk_transform = {
-                        .position = pos,
-                        .rotation = {0.0f, 0.0f, 0.0f},
-                        .scale = {1.0f, 1.0f, 1.0f}
-                    };
-    
-                    glBindVertexArray(rcs[real_index].vao);
-                    glBindTexture(GL_TEXTURE_2D, rc_defaults.texture_id);
-    
-                    mat4_t mvp = mat4_mul(mat4_model(&chunk_transform), camera_mat);
-                    glUniformMatrix4fv(rc_defaults.mvp_matrix_loc, 1, GL_FALSE, (float*)mvp.m);
-                    glDrawElements(GL_TRIANGLES, rcs[real_index].indices, GL_UNSIGNED_INT, 0);
-                }
-            }
-        }
-    }
-    */
 
     glUseProgram(0);
 }

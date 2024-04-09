@@ -2,6 +2,7 @@
 #define PHYSICS_H
 
 #include "deltatime.h"
+#include "../transform.h"
 #include "../math/vec3.h"
 #include "../world/world.h"
 

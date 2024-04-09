@@ -61,10 +61,6 @@ world_octree_node_t* world_octree_get_final_node(int face, vec3_t pos) {
             temp_node->parent = current_node;
 
             if (i == WORLD_OCTREE_DEPTH - 1){
-                //printf("XX\n");
-                //vec3_print((vec3_t){start_x, start_y, start_z});
-                //vec3_print(pos);
-                //printf("YY\n");
                 world_octree_generate_final_node(temp_node, face, pos);
                 current_node = temp_node;
                 break;
@@ -99,7 +95,6 @@ void world_octree_generate_final_node(world_octree_node_t* node, int face, vec3_
         vec3_t real_pos2 = vec3_add(real_pos, octree_offsets[i]);
         init_chunk(chunks[i], real_pos2);
     }
-    printf("new octree\n");
 
     node->world_octree_ptr.chunks = chunks;
 }
@@ -117,19 +112,11 @@ void world_octree_get_chunks(chunk_t*** chunks, int range, vec3_t origin) {
             for (int z = 0; z < single_axis; z++) {
                 pos = vec3_add(start_pos, (vec3_t){x * 1.0f, y * 1.0f, z * 1.0f});
 
-                vec3_print(pos);
-                printf("x\n");
-
                 world_octree_node_t* node = world_octree_get_final_node(0, pos);
                 for (int i = 0; i < 8; i++) {
                     (*chunks)[chunk_index++] = node->world_octree_ptr.chunks[i];
                 }
-                //chunk_index += 8;
             }
         }
     }
-}
-
-int world_octree_get_face(vec3_t coords) {
-    
 }
