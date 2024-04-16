@@ -1,6 +1,6 @@
 #include "world.h"
 
-static world_octree_node_t world_octrees[6];
+static world_octree_node_t world_octree;
 
 // TODO: Create vec3_t int version
 static const vec3_t octree_offsets[8] = {
@@ -26,20 +26,18 @@ static const vec3_t octree_offsets[8] = {
 * 7 = (1, 1, 1) = 111
 */
 
-void world_octrees_init_empty() {
-    for (int i = 0; i < WORLD_OCTREE_FACE_COUNT; i++) {
-        world_octrees[i].parent = NULL;
-        world_octrees[i].world_octree_ptr.children = (world_octree_node_t**)malloc(sizeof(world_octree_node_t*) * 8);
-        for (int j = 0; j < 8; j++) {
-            world_octrees[i].world_octree_ptr.children[j] = NULL;
-        }
+void world_octree_init_empty() {
+    world_octree.parent = NULL;
+    world_octree.world_octree_ptr.children = (world_octree_node_t**)malloc(sizeof(world_octree_node_t*) * 8);
+    for (int i = 0; i < 8; i++) {
+        world_octree.world_octree_ptr.children[i] = NULL;
     }
 }
 
 // Return octree final node if it exists
 // pos = index of chunk in the given chunk (coordinates / CHUNK_SIZE) 
 world_octree_node_t* world_octree_get_final_node(int face, vec3_t pos) {
-    world_octree_node_t* current_node = &world_octrees[face];
+    world_octree_node_t* current_node = &world_octree;
     world_octree_node_t* temp_node;
 
     int width = WORLD_OCTREE_SIZE_PER_AXIS;

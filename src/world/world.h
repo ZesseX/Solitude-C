@@ -21,7 +21,7 @@ struct world_octree_node_t{
     } world_octree_ptr;
 };
 
-void world_octrees_init_empty();
+void world_octree_init_empty();
 world_octree_node_t* world_octree_get_final_node(int face, vec3_t pos);
 void world_octree_init_node(world_octree_node_t** node);
 void world_octree_generate_final_node(world_octree_node_t* node, int face, vec3_t pos);

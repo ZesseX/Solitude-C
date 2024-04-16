@@ -3,7 +3,7 @@
 render_context_t render_context;
 
 void game_init() {
-    world_octrees_init_empty();
+    world_octree_init_empty();
 
     renderer_init(&render_context);
 

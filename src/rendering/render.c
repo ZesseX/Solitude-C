@@ -5,11 +5,6 @@ GLFWwindow* window = NULL;
 transform_t cam_trans;
 camera_t camera;
 
-//chunk_t** base_chunks;
-//int render_block_count = 16;
-
-float last_frame_time = 0;
-
 int renderer_init(render_context_t* render_context){
     if (!glfwInit()) {
         printf("Failed to initialize glfw\n");
@@ -29,7 +24,7 @@ int renderer_init(render_context_t* render_context){
     }
 
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(0);
+    glfwSwapInterval(1);
 
     if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         printf("Failed to initialize glad\n");
@@ -42,8 +37,6 @@ int renderer_init(render_context_t* render_context){
 
     opengl_debug_init(OGL_DEBUG_FLAG_HIGH | OGL_DEBUG_FLAG_MEDIUM | OGL_DEBUG_FLAG_LOW);
     glDebugMessageCallback(opengl_debug_msg_callback, NULL);
-
-    last_frame_time = glfwGetTime();
 
     render_init_render_chunks(render_context);
     
@@ -74,9 +67,6 @@ void render_init_render_chunks(render_context_t* rc) {
 
     int rccount = DEMO_WORLD_RANGE_PER_AXIS * DEMO_WORLD_RANGE_PER_AXIS * DEMO_WORLD_RANGE_PER_AXIS * 8;
     rcs = (render_chunk_t*)malloc(sizeof(render_chunk_t) * rccount);
-    //for (int i = 0; i < rccount; i++) {
-    //    update_render_chunk(chunks[i], &rcs[i]);
-    //}
 
     for (int y = 0; y < DEMO_WORLD_RANGE_PER_AXIS; y++) {
         for (int x = 0; x < DEMO_WORLD_RANGE_PER_AXIS; x++) {

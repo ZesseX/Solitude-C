@@ -4,7 +4,7 @@ static double deltatime;
 
 void physics_frame_start_update() {
     // TODO: Update deltatime
-    update_deltatime(0);
+    update_deltatime();
 }
 
 vec3_t raycast_blocks(vec3_t a, vec3_t b) {

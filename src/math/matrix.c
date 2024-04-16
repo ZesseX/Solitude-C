@@ -2,16 +2,6 @@
 
 mat4_t mat4_identity()
 {
-    /*
-    mat4_t m;
-    for (int i = 0; i < 4; i++){
-        for (int j = 0;j < 4; j++){
-            m.m[i][j] = i == j ? 1.0f : 0.0f;
-        }
-    }
-    return m;
-    */
-
     mat4_t m;
     m.m[0][0] = 1.0f;
     m.m[0][1] = 0.0f;
