@@ -6,6 +6,7 @@
 #include "../physics/physics.h"
 #include "../player.h"
 #include "../world/world.h"
+#include "../input/input.h"
 
 void engine_init();
 // returns exit code

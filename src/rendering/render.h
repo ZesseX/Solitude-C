@@ -11,6 +11,7 @@
 #include <malloc.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <pthread.h>
 
 #include "render_chunk.h"
 #include "render_debug.h"
@@ -41,5 +42,21 @@ void render_update_end(render_context_t* render_context);
 
 void render_init_render_chunks(render_context_t* render_context);
 void render_chunk(render_context_t* rc);
+
+typedef struct {
+    chunk_t** chunks;
+    render_chunk_t* rcs;
+
+    int* num_verts;
+    int* num_indices;
+
+    GLfloat** verts;
+    GLuint** indices;
+
+    int start_index;
+    int end_index;
+} rc_create_thread_data_t;
+
+void* rc_create_func(void* args);
 
 #endif

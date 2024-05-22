@@ -62,11 +62,53 @@ void render_init_render_chunks(render_context_t* rc) {
 
     glUseProgram(rc->render_chunk_context.shader_id);
 
-    int rccount = DEMO_WORLD_RANGE_PER_AXIS * DEMO_WORLD_RANGE_PER_AXIS * DEMO_WORLD_RANGE_PER_AXIS * 8;
-    rcs = (render_chunk_t*)malloc(sizeof(render_chunk_t) * rccount);
+    int num_rcs = DEMO_WORLD_RANGE_PER_AXIS * DEMO_WORLD_RANGE_PER_AXIS * DEMO_WORLD_RANGE_PER_AXIS * 8;
+    rcs = (render_chunk_t*)malloc(sizeof(render_chunk_t) * num_rcs);
 
+    const int num_threads = 8;
+    pthread_t* threads = (pthread_t*)malloc(sizeof(pthread_t) * num_threads);
+    rc_create_thread_data_t* thread_data = (rc_create_thread_data_t*)malloc(sizeof(rc_create_thread_data_t) * num_threads);
+
+    int chunks_per_thread = num_rcs / num_threads;
+    int remaining_chunks = num_rcs % num_threads;
+    
     debug_hp_timer_t timer = debug_hp_timer_start();
 
+    for (int i = 0; i < num_threads; i++) {
+        // TODO: Save memory by only giving chunk / rc pointers to the indices required
+        thread_data[i].chunks = chunks;
+        thread_data[i].rcs = rcs;
+        thread_data[i].start_index = i * chunks_per_thread;
+        thread_data[i].end_index = (i + 1) * chunks_per_thread;
+
+        thread_data[i].verts = (GLfloat**)malloc(sizeof(GLfloat*) * num_rcs);
+        thread_data[i].indices = (GLuint**)malloc(sizeof(GLuint*) * num_rcs);
+
+        thread_data[i].num_verts = (int*)malloc(sizeof(int) * num_rcs);
+        thread_data[i].num_indices = (int*)malloc(sizeof(int) * num_rcs);
+
+        if (i == num_threads - 1) {
+            // TODO: Divide evenly between first x chunks, do not give all to last one
+            thread_data[i].end_index += remaining_chunks;
+        }
+        pthread_create(&threads[i], NULL, rc_create_func, (void*)&thread_data[i]);
+    }
+
+    for (int i = 0; i < num_threads; i++) {
+        pthread_join(threads[i], NULL);
+        printf("thread %d\n", i);
+    }
+
+    int thread_index = 0;
+    for (int i = 0; i < num_rcs; i++) {
+        if (i > thread_data[thread_index].end_index) thread_index++;
+        rcs[i] = thread_data[thread_index].rcs[i];
+        update_render_chunk_opengl(chunks[i], &rcs[i], 
+            &(thread_data[thread_index].verts[i]), &(thread_data[thread_index].indices[i]), 
+            thread_data[thread_index].num_verts[i], thread_data[thread_index].num_indices[i]);
+    }
+
+    /*
     for (int y = 0; y < DEMO_WORLD_RANGE_PER_AXIS; y++) {
         for (int x = 0; x < DEMO_WORLD_RANGE_PER_AXIS; x++) {
             for (int z = 0; z < DEMO_WORLD_RANGE_PER_AXIS; z++) {
@@ -74,14 +116,21 @@ void render_init_render_chunks(render_context_t* rc) {
                 index *= 8;
                 for (int i = 0; i < 8; i++) {
                     
-                    update_render_chunk(chunks[index], &rcs[index]);
+                    update_render_chunk_opengl(chunks[index], &rcs[index]);
                     index++;
                 }
             }
         }
     }
+    */
 
     debug_hp_timer_print_result(debug_hp_timer_end(&timer));
+
+    free(threads);
+    free(thread_data);
+
+    rc->render_chunks = rcs;
+    rc->render_chunk_count = num_rcs;
 
     texture_t* texture_0 = load_texture("textures/32x32_0.tga");
     glGenerateMipmap(texture_0->id);
@@ -183,4 +232,13 @@ void render_chunk(render_context_t* rc) {
     }
 
     glUseProgram(0);
+}
+
+void* rc_create_func(void* args) {
+    rc_create_thread_data_t* data = (rc_create_thread_data_t*)args;
+    for (int i = data->start_index; i < data->end_index; i++) {
+        update_render_chunk_init(data->chunks[i], &data->rcs[i], &(data->verts[i]), &(data->indices[i]), &(data->num_verts[i]), &(data->num_indices[i]));
+    }
+    //free(data);
+    return NULL;
 }

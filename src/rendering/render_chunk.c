@@ -1,13 +1,13 @@
 #include "render_chunk.h"
 
-int update_render_chunk(chunk_t* chunk, render_chunk_t* rc) {
+int update_render_chunk_init(chunk_t* chunk, render_chunk_t* rc, GLfloat** verts, GLuint** indices, int* num_verts, int* num_indices) {
     rc->chunk = chunk;
 
-    GLfloat* verts = (GLfloat*)malloc(CHUNK_TOTAL_BLOCK_COUNT * ((3 + 2) * 4 * 6) * sizeof(GLfloat));
-    int verts_count = 0;
+    (*verts) = (GLfloat*)malloc(CHUNK_TOTAL_BLOCK_COUNT * ((3 + 2) * 4 * 6) * sizeof(GLfloat));
+    *num_verts = 0;
 
-    GLuint* indices = (GLuint*)malloc(CHUNK_TOTAL_BLOCK_COUNT * (6 * 6) * sizeof(GLuint));
-    int indices_count = 0;
+    *indices = (GLuint*)malloc(CHUNK_TOTAL_BLOCK_COUNT * (6 * 6) * sizeof(GLuint));
+    *num_indices = 0;
 
     int visible_faces[6];
     for (int y = 0; y < CHUNK_SIZE; y++) {
@@ -21,16 +21,23 @@ int update_render_chunk(chunk_t* chunk, render_chunk_t* rc) {
                 for (int i = 0; i < 6; i++){
                     if(!visible_faces[i]) continue;
 
-                    push_block_vertices(i, (vec3_t){x, y, z}, verts, &verts_count);
-                    push_block_indices((verts_count / (3 + 2)) - 4, i, indices, &indices_count);
+                    push_block_vertices(i, (vec3_t){x, y, z}, *verts, num_verts);
+                    push_block_indices(((*num_verts) / (3 + 2)) - 4, i, *indices, num_indices);
                 }
             }
         }  
     }
 
-    verts = (GLfloat*)realloc(verts, sizeof(GLfloat) * verts_count);
-    indices = (GLuint*)realloc(indices, sizeof(GLuint) * indices_count);
+    // TODO: Check for failure
+    if (*num_verts != 0) {
+        (*verts) = (GLfloat*)realloc((*verts), sizeof(GLfloat) * (*num_verts));
+        (*indices) = (GLuint*)realloc((*indices), sizeof(GLuint) * (*num_indices));
+    }
 
+    return 1;
+}
+
+int update_render_chunk_opengl(chunk_t* chunk, render_chunk_t* rc, GLfloat** verts, GLuint** indices, int num_verts, int num_indices) {
     GLuint vao, vbo, ebo;
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
@@ -39,10 +46,10 @@ int update_render_chunk(chunk_t* chunk, render_chunk_t* rc) {
     glBindVertexArray(vao);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * verts_count, verts, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * num_verts, (*verts), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * indices_count, indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * num_indices, (*indices), GL_STATIC_DRAW);
 
     // pos
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)0);
@@ -59,10 +66,11 @@ int update_render_chunk(chunk_t* chunk, render_chunk_t* rc) {
     rc->vbo = vbo;
     rc->ebo = ebo;
 
-    rc->indices = indices_count;
+    rc->indices = num_indices;
 
-    free(verts);
-    free(indices);
+    // TODO: Why the fuck freeing this thing causes segmentation fault?!
+    //free(*verts);
+    //free(*indices);
 
     return 1;
 }

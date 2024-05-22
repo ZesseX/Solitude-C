@@ -29,10 +29,10 @@ typedef struct {
     int indices;
 
     chunk_t* chunk;
-    
 } render_chunk_t;
 
-int update_render_chunk(chunk_t* chunk, render_chunk_t* rc);
+int update_render_chunk_init(chunk_t* chunk, render_chunk_t* rc, GLfloat** verts, GLuint** indices, int* num_verts, int* num_indices);
+int update_render_chunk_opengl(chunk_t* chunk, render_chunk_t* rc, GLfloat** verts, GLuint** indices, int num_verts, int num_indices);
 
 void get_block_visible_faces(chunk_t* chunk, vec3_t block, int* count);
 

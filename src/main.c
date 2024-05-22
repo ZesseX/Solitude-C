@@ -1,3 +1,6 @@
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
 #include "game.h"
 #include "engine/engine.h"
 #include "utils/debug.h"

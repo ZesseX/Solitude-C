@@ -5,6 +5,9 @@ render_context_t render_context;
 void engine_init() {
     world_octree_init_empty();
 
+    // TODO: Alternatively load in a config file for inputs so that they are saved between sessions
+    init_default_input_config();
+
     renderer_init(&render_context);
     physics_frame_start_update();
 }
