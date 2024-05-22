@@ -14,5 +14,8 @@ add_library(glad ${GLAD_SOURCE_DIR}/glad.c)
 include_directories(${GLFW_INCLUDE_DIR})
 link_directories(${GLFW_LIB_DIR})
 
+set(PTHREADS_INCLUDE_DIR "C:/libs/pthreads/Pre-built.2/include")
+set(PTHREADS_LIB_DIR "C:/libs/pthreads/Pre-built.2/dll/x86")
+
 add_subdirectory(src)
 add_subdirectory(test)

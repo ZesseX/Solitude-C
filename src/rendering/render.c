@@ -1,11 +1,8 @@
 #include "render.h"
 
-GLFWwindow* window = NULL;
-
-transform_t cam_trans;
 camera_t camera;
 
-int renderer_init(render_context_t* render_context){
+int renderer_init(render_context_t* rc){
     if (!glfwInit()) {
         printf("Failed to initialize glfw\n");
         return 0;
@@ -15,15 +12,15 @@ int renderer_init(render_context_t* render_context){
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Solitude", NULL, NULL);
-    if (!window) {
+    rc->window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Solitude", NULL, NULL);
+    if (!rc->window) {
 
         printf("Failed to create glfw window\n");
         glfwTerminate();
         return 0;
     }
 
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(rc->window);
     glfwSwapInterval(1);
 
     if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -38,17 +35,17 @@ int renderer_init(render_context_t* render_context){
     opengl_debug_init(OGL_DEBUG_FLAG_HIGH | OGL_DEBUG_FLAG_MEDIUM | OGL_DEBUG_FLAG_LOW);
     glDebugMessageCallback(opengl_debug_msg_callback, NULL);
 
-    render_init_render_chunks(render_context);
+    render_init_render_chunks(rc);
     
     return 1;
 }
 
-int renderer_update(render_context_t* render_context) {
-    render_update_start();
-    render_chunk(render_context);
-    render_update_end();
+int renderer_update(render_context_t* rc) {
+    render_update_start(rc);
+    render_chunk(rc);
+    render_update_end(rc);
 
-    return glfwWindowShouldClose(window);
+    return glfwWindowShouldClose(rc->window);
 }
 
 render_chunk_t* rcs;
@@ -68,6 +65,8 @@ void render_init_render_chunks(render_context_t* rc) {
     int rccount = DEMO_WORLD_RANGE_PER_AXIS * DEMO_WORLD_RANGE_PER_AXIS * DEMO_WORLD_RANGE_PER_AXIS * 8;
     rcs = (render_chunk_t*)malloc(sizeof(render_chunk_t) * rccount);
 
+    debug_hp_timer_t timer = debug_hp_timer_start();
+
     for (int y = 0; y < DEMO_WORLD_RANGE_PER_AXIS; y++) {
         for (int x = 0; x < DEMO_WORLD_RANGE_PER_AXIS; x++) {
             for (int z = 0; z < DEMO_WORLD_RANGE_PER_AXIS; z++) {
@@ -81,6 +80,8 @@ void render_init_render_chunks(render_context_t* rc) {
             }
         }
     }
+
+    debug_hp_timer_print_result(debug_hp_timer_end(&timer));
 
     texture_t* texture_0 = load_texture("textures/32x32_0.tga");
     glGenerateMipmap(texture_0->id);
@@ -102,9 +103,9 @@ void render_init_render_chunks(render_context_t* rc) {
 double interval = 0.1;
 double interval_cur = 0.0;
 int fps = 0;
-void render_update_start() {
-    vec3_t move_inputs = input_get_movement(window);
-    vec2_t rotation_inputs = input_get_rotation(window);
+void render_update_start(render_context_t* rc) {
+    vec3_t move_inputs = input_get_movement(rc->window);
+    vec2_t rotation_inputs = input_get_rotation(rc->window);
 
     if (interval_cur <= 0.0) {
         fps = (int)(1.0 / get_deltatime());
@@ -116,15 +117,15 @@ void render_update_start() {
 
     char* fps_text = (char*)malloc(sizeof(char) * 50);
     snprintf(fps_text, 50, "%d", fps);
-    glfwSetWindowTitle(window, fps_text);
+    glfwSetWindowTitle(rc->window, fps_text);
     camera_update_transform_freecam(&camera, get_deltatime(), move_inputs, rotation_inputs);
 
     glClearColor(0.1, 0.3f, 0.6f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void render_update_end() {
-    glfwSwapBuffers(window);
+void render_update_end(render_context_t* rc) {
+    glfwSwapBuffers(rc->window);
     glfwPollEvents();
 } 
 

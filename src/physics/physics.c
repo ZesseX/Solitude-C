@@ -2,9 +2,12 @@
 
 static double deltatime;
 
-void physics_frame_start_update() {
-    // TODO: Update deltatime
+void physics_frame_start_update(void) {
     update_deltatime();
+}
+
+void physics_frame_end_update(void) {
+    // Might need this some day
 }
 
 vec3_t raycast_blocks(vec3_t a, vec3_t b) {

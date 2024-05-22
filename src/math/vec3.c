@@ -19,6 +19,9 @@ float vec3_magnitude(vec3_t* v) {
 void vec3_normalize(vec3_t* v) {
     if(v->x == 0 && v->y == 0 && v->z == 0) {
         //fprintf(stderr, "Unable to normalize a zero vector\n");
+        v->x = 0;
+        v->y = 0;
+        v->z = 0;
         return;
     }
 

@@ -23,8 +23,11 @@
 #include "../input/input.h"
 #include "../world/world.h"
 #include "../world/chunk.h"
+#include "../utils/debug.h"
 
 typedef struct {
+    GLFWwindow* window;
+
     render_chunk_context_t render_chunk_context;
     render_chunk_t* render_chunks;
     int render_chunk_count;
@@ -33,8 +36,8 @@ typedef struct {
 int renderer_init(render_context_t* render_context);
 int renderer_update(render_context_t* render_context);
 
-void render_update_start();
-void render_update_end();
+void render_update_start(render_context_t* render_context);
+void render_update_end(render_context_t* render_context);
 
 void render_init_render_chunks(render_context_t* render_context);
 void render_chunk(render_context_t* rc);

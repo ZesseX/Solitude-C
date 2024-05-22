@@ -14,7 +14,9 @@ float vec2_magnitude(vec2_t* v) {
 
 void vec2_normalize(vec2_t* v) {
     if(v->x == 0 && v->y == 0) {
-        fprintf(stderr, "Unable to normalize a zero vector\n");
+        //fprintf(stderr, "Unable to normalize a zero vector\n");
+        v->x = 0;
+        v->x = 0;
         return;
     }
 

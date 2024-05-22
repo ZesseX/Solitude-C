@@ -12,4 +12,3 @@ void update_deltatime() {
 double get_deltatime() {
     return deltatime;
 }
-
