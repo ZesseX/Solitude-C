@@ -21,5 +21,7 @@ texture_t* load_texture(const char* path) {
 
     glBindTexture(GL_TEXTURE_2D, 0);
 
+    glGenerateMipmap(texture->id);
+
     return texture;
 }

@@ -12,11 +12,6 @@
 
 typedef struct {
     GLuint shader_id;
-
-    GLuint* texture_ids;
-    int texture_index;
-    double texture_swap_interval;
-
     GLuint texture_loc;
     GLuint mvp_matrix_loc;
 } render_chunk_context_t;

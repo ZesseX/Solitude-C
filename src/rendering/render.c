@@ -21,7 +21,7 @@ int renderer_init(render_context_t* rc){
     }
 
     glfwMakeContextCurrent(rc->window);
-    glfwSwapInterval(1);
+    glfwSwapInterval(0);
 
     if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         printf("Failed to initialize glad\n");
@@ -48,8 +48,6 @@ int renderer_update(render_context_t* rc) {
     return glfwWindowShouldClose(rc->window);
 }
 
-render_chunk_t* rcs;
-
 void render_init_render_chunks(render_context_t* rc) {
     int scs;
     rc->render_chunk_context.shader_id = shader_load("shader/vert.vert", "shader/frag.frag", &scs);
@@ -63,7 +61,7 @@ void render_init_render_chunks(render_context_t* rc) {
     glUseProgram(rc->render_chunk_context.shader_id);
 
     int num_rcs = DEMO_WORLD_RANGE_PER_AXIS * DEMO_WORLD_RANGE_PER_AXIS * DEMO_WORLD_RANGE_PER_AXIS * 8;
-    rcs = (render_chunk_t*)malloc(sizeof(render_chunk_t) * num_rcs);
+    rc->render_chunks = (render_chunk_t*)malloc(sizeof(render_chunk_t) * num_rcs);
 
     const int num_threads = 8;
     pthread_t* threads = (pthread_t*)malloc(sizeof(pthread_t) * num_threads);
@@ -72,12 +70,10 @@ void render_init_render_chunks(render_context_t* rc) {
     int chunks_per_thread = num_rcs / num_threads;
     int remaining_chunks = num_rcs % num_threads;
     
-    debug_hp_timer_t timer = debug_hp_timer_start();
-
     for (int i = 0; i < num_threads; i++) {
         // TODO: Save memory by only giving chunk / rc pointers to the indices required
         thread_data[i].chunks = chunks;
-        thread_data[i].rcs = rcs;
+        thread_data[i].rcs = rc->render_chunks;
         thread_data[i].start_index = i * chunks_per_thread;
         thread_data[i].end_index = (i + 1) * chunks_per_thread;
 
@@ -96,53 +92,28 @@ void render_init_render_chunks(render_context_t* rc) {
 
     for (int i = 0; i < num_threads; i++) {
         pthread_join(threads[i], NULL);
-        printf("thread %d\n", i);
     }
 
     int thread_index = 0;
     for (int i = 0; i < num_rcs; i++) {
         if (i > thread_data[thread_index].end_index) thread_index++;
-        rcs[i] = thread_data[thread_index].rcs[i];
-        update_render_chunk_opengl(chunks[i], &rcs[i], 
+        rc->render_chunks[i] = thread_data[thread_index].rcs[i];
+        update_render_chunk_opengl(chunks[i], &rc->render_chunks[i], 
             &(thread_data[thread_index].verts[i]), &(thread_data[thread_index].indices[i]), 
             thread_data[thread_index].num_verts[i], thread_data[thread_index].num_indices[i]);
     }
 
-    /*
-    for (int y = 0; y < DEMO_WORLD_RANGE_PER_AXIS; y++) {
-        for (int x = 0; x < DEMO_WORLD_RANGE_PER_AXIS; x++) {
-            for (int z = 0; z < DEMO_WORLD_RANGE_PER_AXIS; z++) {
-                int index = (y * DEMO_WORLD_RANGE_PER_AXIS * DEMO_WORLD_RANGE_PER_AXIS) + (x * DEMO_WORLD_RANGE_PER_AXIS) + z;
-                index *= 8;
-                for (int i = 0; i < 8; i++) {
-                    
-                    update_render_chunk_opengl(chunks[index], &rcs[index]);
-                    index++;
-                }
-            }
-        }
-    }
-    */
-
-    debug_hp_timer_print_result(debug_hp_timer_end(&timer));
-
     free(threads);
     free(thread_data);
 
-    rc->render_chunks = rcs;
     rc->render_chunk_count = num_rcs;
 
-    texture_t* texture_0 = load_texture("textures/32x32_0.tga");
-    glGenerateMipmap(texture_0->id);
+    rc->texture_animation_main_atlas.anim_frame_time = 1.0;
+    rc->texture_animation_main_atlas.cur_anim_frame_index = 0;
+    rc->texture_animation_main_atlas.cur_anim_frame_time = 0.0;
 
-    texture_t* texture_1 = load_texture("textures/32x32_1.tga");
-    glGenerateMipmap(texture_1->id);
+    (void)texture_animations_load_textures(&rc->texture_animation_main_atlas, 2, "textures/32x32");
 
-    rc->render_chunk_context.texture_ids = (GLuint*)malloc(TEXTURE_ARRAY_LENGTH * sizeof(GLuint));
-
-    rc->render_chunk_context.texture_ids[0] = texture_0->id;
-    rc->render_chunk_context.texture_ids[1] = texture_1->id;
-    
     rc->render_chunk_context.mvp_matrix_loc = glGetUniformLocation(rc->render_chunk_context.shader_id, "mvp");;
     rc->render_chunk_context.texture_loc = glGetUniformLocation(rc->render_chunk_context.shader_id, "texture_sampler");
 
@@ -179,15 +150,6 @@ void render_update_end(render_context_t* rc) {
 } 
 
 void render_chunk(render_context_t* rc) {
-    rc->render_chunk_context.texture_swap_interval -= interval_cur;
-    if (rc->render_chunk_context.texture_swap_interval <= 0) {
-        rc->render_chunk_context.texture_swap_interval = TEXTURE_SWAP_INTERVAL;
-        rc->render_chunk_context.texture_index++;
-        if (rc->render_chunk_context.texture_index > TEXTURE_ARRAY_LENGTH - 1) {
-            rc->render_chunk_context.texture_index = 0;
-        }
-    }
-
     glUseProgram(rc->render_chunk_context.shader_id);
     mat4_t camera_mat = mat4_mul(camera.view, camera.proj);
 
@@ -208,7 +170,7 @@ void render_chunk(render_context_t* rc) {
                 
                 for (int i = 0; i < 8; i++) {
                     int index = (y * DEMO_WORLD_RANGE_PER_AXIS * DEMO_WORLD_RANGE_PER_AXIS) + (x * DEMO_WORLD_RANGE_PER_AXIS) + z;
-                    vec3_t pos = rcs[index * 8 + i].chunk->position;
+                    vec3_t pos = rc->render_chunks[index * 8 + i].chunk->position;
 
                     vec3_t offset = octree_offsets[i];
                     offset = vec3_mulf(offset, CHUNK_SIZE);
@@ -220,12 +182,12 @@ void render_chunk(render_context_t* rc) {
                         .scale = {1.0f, 1.0f, 1.0f}
                     };
 
-                    glBindVertexArray(rcs[index * 8 + i].vao);
-                    glBindTexture(GL_TEXTURE_2D, rc->render_chunk_context.texture_ids[rc->render_chunk_context.texture_index]);
+                    glBindVertexArray(rc->render_chunks[index * 8 + i].vao);
+                    glBindTexture(GL_TEXTURE_2D, texture_animation_get_current_id(&rc->texture_animation_main_atlas));
 
                     mat4_t mvp = mat4_mul(mat4_model(&chunk_transform), camera_mat);
                     glUniformMatrix4fv(rc->render_chunk_context.mvp_matrix_loc, 1, GL_FALSE, (float*)mvp.m);
-                    glDrawElements(GL_TRIANGLES, rcs[index * 8 + i].indices, GL_UNSIGNED_INT, 0);
+                    glDrawElements(GL_TRIANGLES, rc->render_chunks[index * 8 + i].indices, GL_UNSIGNED_INT, 0);
                 }
             }
         }

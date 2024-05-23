@@ -18,13 +18,14 @@
 #include "camera.h"
 #include "texture.h"
 #include "shader.h"
+#include "texture_animation.h"
 #include "../math/matrix.h"
 #include "../physics/deltatime.h"
 #include "../transform.h"
 #include "../input/input.h"
 #include "../world/world.h"
 #include "../world/chunk.h"
-#include "../utils/debug.h"
+#include "../utils/debug/debug.h"
 
 typedef struct {
     GLFWwindow* window;
@@ -32,6 +33,8 @@ typedef struct {
     render_chunk_context_t render_chunk_context;
     render_chunk_t* render_chunks;
     int render_chunk_count;
+
+    texture_animation_t texture_animation_main_atlas;
 } render_context_t;
 
 int renderer_init(render_context_t* render_context);

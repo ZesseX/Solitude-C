@@ -9,6 +9,6 @@ void update_deltatime() {
     last_frame_time = cur_frame_Time;
 }
 
-double get_deltatime() {
+inline double get_deltatime() {
     return deltatime;
 }

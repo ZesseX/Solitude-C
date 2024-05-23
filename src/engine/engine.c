@@ -16,6 +16,7 @@ exit_code engine_run() {
     int should_close = 0;
     while(!should_close){
         physics_frame_start_update();
+        texture_animation_update(&render_context.texture_animation_main_atlas);
         should_close = renderer_update(&render_context);
     }
     // TODO: should return something useful

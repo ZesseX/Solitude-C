@@ -6,6 +6,12 @@
 #include "../math/vec3.h"
 #include "../math/vec2.h"
 
+// TODO: Use this + option for key up / key down frame detection not just on or off
+typedef struct {
+    int* keys;
+    int key_count;
+} input_keybind_t;
+
 // Might be stupid
 typedef struct {
     // MOVEMENT
