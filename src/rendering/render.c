@@ -14,14 +14,13 @@ int renderer_init(render_context_t* rc){
 
     rc->window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Solitude", NULL, NULL);
     if (!rc->window) {
-
         printf("Failed to create glfw window\n");
         glfwTerminate();
         return 0;
     }
 
     glfwMakeContextCurrent(rc->window);
-    glfwSwapInterval(0);
+    glfwSwapInterval(1);
 
     if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         printf("Failed to initialize glad\n");
@@ -105,7 +104,7 @@ void render_init_render_chunks(render_context_t* rc) {
 
     free(threads);
     free(thread_data);
-
+    
     rc->render_chunk_count = num_rcs;
 
     rc->texture_animation_main_atlas.anim_frame_time = 1.0;
@@ -124,20 +123,11 @@ double interval = 0.1;
 double interval_cur = 0.0;
 int fps = 0;
 void render_update_start(render_context_t* rc) {
+    glfwPollEvents();
+    
     vec3_t move_inputs = input_get_movement(rc->window);
     vec2_t rotation_inputs = input_get_rotation(rc->window);
 
-    if (interval_cur <= 0.0) {
-        fps = (int)(1.0 / get_deltatime());
-        interval_cur = interval;
-    }
-    else {
-        interval_cur -= get_deltatime();
-    }
-
-    char* fps_text = (char*)malloc(sizeof(char) * 50);
-    snprintf(fps_text, 50, "%d", fps);
-    glfwSetWindowTitle(rc->window, fps_text);
     camera_update_transform_freecam(&camera, get_deltatime(), move_inputs, rotation_inputs);
 
     glClearColor(0.1, 0.3f, 0.6f, 1.0f);
@@ -146,8 +136,7 @@ void render_update_start(render_context_t* rc) {
 
 void render_update_end(render_context_t* rc) {
     glfwSwapBuffers(rc->window);
-    glfwPollEvents();
-} 
+}
 
 void render_chunk(render_context_t* rc) {
     glUseProgram(rc->render_chunk_context.shader_id);

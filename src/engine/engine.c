@@ -18,6 +18,7 @@ exit_code engine_run() {
         physics_frame_start_update();
         texture_animation_update(&render_context.texture_animation_main_atlas);
         should_close = renderer_update(&render_context);
+        debug_update(render_context.window);
     }
     // TODO: should return something useful
     return exit_code_other;

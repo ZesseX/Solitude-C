@@ -7,17 +7,16 @@ void texture_animation_update(texture_animation_t* texture_anim) {
     double remainder = texture_anim->anim_frame_time - texture_anim->cur_anim_frame_time;
     if (remainder > 0.0) return;
 
-    // add the remainder to the cur_anim_frame_time to try and avoid texture animation 
-    // slowing down due to constant overshooting between updates
+    // add the remainder to the cur_anim_frame_time to avoid flickering / desync with higher framerates
     texture_anim->cur_anim_frame_time = -remainder;
     if (++texture_anim->cur_anim_frame_index >= texture_anim->texture_count) {
         texture_anim->cur_anim_frame_index = 0;
     }
-
-    printf("%d\n", texture_anim->cur_anim_frame_index);
 }
 
 int texture_animations_load_textures(texture_animation_t* texture_anim, int len_textures, const char* name) {
+    texture_anim->name = (char*)(name);
+    
     texture_anim->texture_count = len_textures;
     texture_anim->textures = (texture_t**)malloc(sizeof(texture_t*) * len_textures);
 
@@ -54,6 +53,19 @@ int texture_animations_load_textures(texture_animation_t* texture_anim, int len_
     }
 
     return 1;
+}
+
+int texture_animations_reload_textures(texture_animation_t* texture_anim, int len_textures) {
+    for (int i = 0; i < texture_anim->texture_count; i++) {
+        texture_animations_unload_textures(texture_anim);
+        texture_animations_load_textures(texture_anim, texture_anim->texture_count, (const char*)texture_anim->name);
+    }
+}
+
+int texture_animations_unload_textures(texture_animation_t* texture_anim) {
+    for (int i = 0; i < texture_anim->texture_count; i++) {
+        unload_texture(texture_anim->textures[i]);
+    }
 }
 
 inline GLuint texture_animation_get_current_id(texture_animation_t* texture_anim) {

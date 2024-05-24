@@ -25,3 +25,10 @@ texture_t* load_texture(const char* path) {
 
     return texture;
 }
+
+texture_t* unload_texture(texture_t* texture) {
+    free_tga_data(texture->tga);
+    free(texture->tga);
+
+    glDeleteTextures(1, &texture->id);
+}

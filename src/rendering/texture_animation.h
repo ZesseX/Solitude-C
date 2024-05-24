@@ -11,6 +11,8 @@ typedef struct {
     texture_t** textures;
     int texture_count;
 
+    char* name;
+
     // TODO: Should all textures use the same 'anim_frame_time' and be in sync?
     double anim_frame_time; // Target time for each frame
     double cur_anim_frame_time;
@@ -19,6 +21,8 @@ typedef struct {
 
 void texture_animation_update(texture_animation_t* texture_anim);
 int texture_animations_load_textures(texture_animation_t* texture_anim, int len_textures, const char* name);
+int texture_animations_reload_textures(texture_animation_t* texture_anim, int len_textures);
+int texture_animations_unload_textures(texture_animation_t* texture_anim);
 
 GLuint texture_animation_get_current_id(texture_animation_t* texture_anim);
 

@@ -37,7 +37,7 @@ void init_chunk(chunk_t* chunk, vec3_t pos) {
 }
 
 int has_block(chunk_t* chunk, vec3_t pos) {
-    if(pos.x < 0 || pos.y < 0 || pos.z < 0 || pos.x == CHUNK_SIZE || pos.y == CHUNK_SIZE || pos.z == CHUNK_SIZE) {
+    if (pos.x < 0 || pos.y < 0 || pos.z < 0 || pos.x == CHUNK_SIZE || pos.y == CHUNK_SIZE || pos.z == CHUNK_SIZE) {
         // TODO: Check the nearby chunk
         return 0;
     }

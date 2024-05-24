@@ -12,5 +12,6 @@ typedef struct {
 } texture_t;
 
 texture_t* load_texture(const char* path);
+texture_t* unload_texture(texture_t* texture);
 
 #endif
