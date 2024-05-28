@@ -3,7 +3,7 @@
 
 #include "game.h"
 #include "engine/engine.h"
-#include "utils/debug/debug.h"
+#include "utils/debugging/debug.h"
 
 #define DEBUG 1
 

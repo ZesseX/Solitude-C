@@ -107,11 +107,11 @@ void render_init_render_chunks(render_context_t* rc) {
     
     rc->render_chunk_count = num_rcs;
 
-    rc->texture_animation_main_atlas.anim_frame_time = 1.0;
+    rc->texture_animation_main_atlas.anim_frame_time = 1.0 / 13.0;
     rc->texture_animation_main_atlas.cur_anim_frame_index = 0;
     rc->texture_animation_main_atlas.cur_anim_frame_time = 0.0;
 
-    (void)texture_animations_load_textures(&rc->texture_animation_main_atlas, 2, "textures/32x32");
+    (void)texture_animations_load_textures(&rc->texture_animation_main_atlas, 13, "textures/pic");
 
     rc->render_chunk_context.mvp_matrix_loc = glGetUniformLocation(rc->render_chunk_context.shader_id, "mvp");;
     rc->render_chunk_context.texture_loc = glGetUniformLocation(rc->render_chunk_context.shader_id, "texture_sampler");

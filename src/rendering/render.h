@@ -25,7 +25,7 @@
 #include "../input/input.h"
 #include "../world/world.h"
 #include "../world/chunk.h"
-#include "../utils/debug/debug.h"
+#include "../utils/debugging/debug.h"
 
 typedef struct {
     GLFWwindow* window;
