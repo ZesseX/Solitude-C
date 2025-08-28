@@ -5,7 +5,7 @@
 #include "../rendering/render.h"
 #include "../rendering/texture_animation.h"
 #include "../physics/physics.h"
-#include "../player.h"
+#include "../player/player.h"
 #include "../world/world.h"
 #include "../input/input.h"
 

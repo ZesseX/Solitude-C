@@ -262,6 +262,14 @@ void push_block_indices(int offset, int face, GLuint* indices, int* count) {
     }
 }
 
+// deletes data saved to render chunk + frees chunk_t* chunk
+void clear_render_chunk(render_chunk_t* rc) {
+    free_render_chunk_buffers(rc);
+    rc->indices = 0;
+
+    delete_chunk(rc->chunk);
+}
+
 void free_render_chunk_buffers(render_chunk_t* rc) {
     glDeleteBuffers(1, &rc->vbo);
     glDeleteBuffers(1, &rc->ebo);

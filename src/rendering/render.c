@@ -1,7 +1,5 @@
 #include "render.h"
 
-camera_t camera;
-
 int renderer_init(render_context_t* rc){
     if (!glfwInit()) {
         printf("Failed to initialize glfw\n");
@@ -47,6 +45,10 @@ int renderer_update(render_context_t* rc) {
     return glfwWindowShouldClose(rc->window);
 }
 
+void renderer_change_camera(render_context_t* rc, camera_t* new_cam) {
+    rc->main_camera = new_cam;
+}
+
 void render_init_render_chunks(render_context_t* rc) {
     int scs;
     rc->render_chunk_context.shader_id = shader_load("shader/vert.vert", "shader/frag.frag", &scs);
@@ -56,8 +58,6 @@ void render_init_render_chunks(render_context_t* rc) {
 
     chunk_t** chunks;
     world_octree_get_chunks(&chunks, DEMO_WORLD_RANGE, (vec3_t){DEMO_WORLD_RANGE, DEMO_WORLD_RANGE, DEMO_WORLD_RANGE});
-
-    glUseProgram(rc->render_chunk_context.shader_id);
 
     int num_rcs = DEMO_WORLD_RANGE_PER_AXIS * DEMO_WORLD_RANGE_PER_AXIS * DEMO_WORLD_RANGE_PER_AXIS * 8;
     rc->render_chunks = (render_chunk_t*)malloc(sizeof(render_chunk_t) * num_rcs);
@@ -115,8 +115,6 @@ void render_init_render_chunks(render_context_t* rc) {
 
     rc->render_chunk_context.mvp_matrix_loc = glGetUniformLocation(rc->render_chunk_context.shader_id, "mvp");;
     rc->render_chunk_context.texture_loc = glGetUniformLocation(rc->render_chunk_context.shader_id, "texture_sampler");
-
-    camera.transform.position = (vec3_t){0.0f, 32.0f, 0.0f};
 }
 
 double interval = 0.1;
@@ -125,11 +123,6 @@ int fps = 0;
 void render_update_start(render_context_t* rc) {
     glfwPollEvents();
     
-    vec3_t move_inputs = input_get_movement(rc->window);
-    vec2_t rotation_inputs = input_get_rotation(rc->window);
-
-    camera_update_transform_freecam(&camera, get_deltatime(), move_inputs, rotation_inputs);
-
     glClearColor(0.1, 0.3f, 0.6f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
@@ -140,7 +133,7 @@ void render_update_end(render_context_t* rc) {
 
 void render_chunk(render_context_t* rc) {
     glUseProgram(rc->render_chunk_context.shader_id);
-    mat4_t camera_mat = mat4_mul(camera.view, camera.proj);
+    mat4_t camera_mat = mat4_mul(rc->main_camera->view, rc->main_camera->proj);
 
     const vec3_t octree_offsets[8] = {
         {0, 0, 0},
@@ -159,7 +152,7 @@ void render_chunk(render_context_t* rc) {
                 
                 for (int i = 0; i < 8; i++) {
                     int index = (y * DEMO_WORLD_RANGE_PER_AXIS * DEMO_WORLD_RANGE_PER_AXIS) + (x * DEMO_WORLD_RANGE_PER_AXIS) + z;
-                    vec3_t pos = rc->render_chunks[index * 8 + i].chunk->position;
+                    vec3_t pos = rc->render_chunks[index * 8 + i].chunk->position_real;
 
                     vec3_t offset = octree_offsets[i];
                     offset = vec3_mulf(offset, CHUNK_SIZE);

@@ -14,8 +14,18 @@ add_library(glad ${GLAD_SOURCE_DIR}/glad.c)
 include_directories(${GLFW_INCLUDE_DIR})
 link_directories(${GLFW_LIB_DIR})
 
-set(PTHREADS_INCLUDE_DIR "C:/libs/pthreads/Pre-built.2/include")
-set(PTHREADS_LIB_DIR "C:/libs/pthreads/Pre-built.2/dll/x86")
+#set(PTHREADS_INCLUDE_DIR "C:/libs/pthreads/Pre-built.2/include")
+#set(PTHREADS_LIB_DIR "C:/libs/pthreads/Pre-built.2/lib/x86")
+#
+#include_directories(${PTHREADS_INCLUDE_DIR})
+#link_libraries(${PTHREADS_LIB_DIR})
+#
+#set(PORTAUDIO_INCLUDE_DIR "C:/libs/portaudio/include")
+#set(PORTAUDIO_LIB_DIR "C:/libs/portaudio/build")
+#
+#include_directories(${PORTAUDIO_INCLUDE_DIR})
+#link_libraries(${PORTAUDIO_LIB_DIR})
 
 add_subdirectory(src)
 add_subdirectory(test)
+

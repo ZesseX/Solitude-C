@@ -82,6 +82,8 @@ GLuint shader_load(const char* vert_path, const char* frag_path, int* success)
     glDeleteShader(vert_id);
     glDeleteShader(frag_id);
 
+    glUseProgram(program_id);
+
     *success = 1;
     return program_id;
 }

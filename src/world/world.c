@@ -84,7 +84,7 @@ void world_octree_init_node(world_octree_node_t** node) {
 void world_octree_generate_final_node(world_octree_node_t* node, int face, vec3_t pos) {
     // TODO: Generate chunks based on position given
     chunk_t** chunks = (chunk_t**)malloc(sizeof(chunk_t*) * 8);
-
+    
     // multiply with 2 because 8 chunks means octree node is 2x chunksize per axis
     vec3_t real_pos = vec3_mulf(pos, 2.0f);
     for (int i = 0; i < 8; i++) {

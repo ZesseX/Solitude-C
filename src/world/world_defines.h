@@ -2,7 +2,7 @@
 #define WORLD_DEFINES_H
 
 // Max height of perlin noise overlayed on top of the heightmap. (0 - this)
-#define WORLD_MAX_PERLIN_HEIGHT 32
+#define WORLD_MAX_PERLIN_HEIGHT 64
 
 #define WORLD_OCTREE_FACE_COUNT 6
 #define WORLD_OCTREE_DEPTH 17

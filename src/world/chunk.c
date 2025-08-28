@@ -1,7 +1,8 @@
 #include "chunk.h"
 
 void init_chunk(chunk_t* chunk, vec3_t pos) {
-    chunk->position = vec3_mulf(pos, CHUNK_SIZE);
+    chunk->position = pos;
+    chunk->position_real = vec3_mulf(pos, CHUNK_SIZE);
     chunk->blocks = (uint16_t*)malloc(CHUNK_TOTAL_BLOCK_COUNT * sizeof(uint16_t));
 
     int full_air = 1;
@@ -9,10 +10,10 @@ void init_chunk(chunk_t* chunk, vec3_t pos) {
     for (int x = 0; x < CHUNK_SIZE; x++) {
         for (int z = 0; z < CHUNK_SIZE; z++) {
             // TODO: Include world heightmap in this
-            int height = WORLD_MAX_PERLIN_HEIGHT * perlin_noise(x + chunk->position.x, z + chunk->position.z, 0.2f, 2);
-            max_heights[x][z] = height - chunk->position.y;
+            int height = WORLD_MAX_PERLIN_HEIGHT * perlin_noise(x + chunk->position_real.x, z + chunk->position_real.z, 0.2f, 2);
+            max_heights[x][z] = height - chunk->position_real.y;
 
-            if (full_air && height - chunk->position.y < 0) full_air = 0;
+            if (full_air && height - chunk->position_real.y < 0) full_air = 0;
         }
     }
 
@@ -55,4 +56,9 @@ vec3_t chunk_index_to_vec3(int index) {
     pos.x = (index % (CHUNK_SIZE_SQUARED)) / CHUNK_SIZE;
     pos.z = (index % (CHUNK_SIZE_SQUARED)) % CHUNK_SIZE;
     return pos;
+}
+
+void delete_chunk(chunk_t* chunk) {
+    free(chunk->blocks);
+    free(chunk);
 }

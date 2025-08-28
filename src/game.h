@@ -4,7 +4,7 @@
 #define CHUNK_COUNT_PER_AXIS 2
 
 #include "rendering/render.h"
-#include "player.h"
+#include "player/player.h"
 
 #include "world/world.h"
 

@@ -34,6 +34,7 @@ void get_block_visible_faces(chunk_t* chunk, vec3_t block, int* count);
 void push_block_vertices(int face, vec3_t pos, GLfloat* verts, int* count);
 void push_block_indices(int offset, int face, GLuint* indices, int* count);
 
+void clear_render_chunk(render_chunk_t* rc);
 void free_render_chunk_buffers(render_chunk_t* rc);
 
 #endif

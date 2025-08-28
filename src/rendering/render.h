@@ -35,10 +35,14 @@ typedef struct {
     int render_chunk_count;
 
     texture_animation_t texture_animation_main_atlas;
+
+    camera_t* main_camera;
 } render_context_t;
 
 int renderer_init(render_context_t* render_context);
 int renderer_update(render_context_t* render_context);
+
+void renderer_change_camera(render_context_t* render_context, camera_t* new_cam);
 
 void render_update_start(render_context_t* render_context);
 void render_update_end(render_context_t* render_context);
